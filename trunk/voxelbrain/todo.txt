@@ -3,9 +3,11 @@ TODO:
     GL interface (pretty straightforward - accepts surface points, selection points, can optionally show crossections)
     PR interface (tools for propagation; 
                   no deletion, active points are naturally those which have a possible move; 
-                  move itself is an object; moves can be rated)
+                  move itself is an object; 
+                  moves can be rated)
     UI interface (includes emitting of mouse/keyboard signals; 
-                  can be implemented with different actual UI; think more)
+                  can be implemented with different actual UI; 
+                  think more)
                   
                   ----
                   
