@@ -15,3 +15,6 @@ TODO:
     1. find possible directions given initial steps
     2. rate the directions
     
+                  ----
+                  another test from eclipse/windows
+    
