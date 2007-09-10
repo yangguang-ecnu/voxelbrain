@@ -1,0 +1,15 @@
+TODO:
+  modules (in order of proposed implementation):
+    GL interface (pretty straightforward - accepts surface points, selection points, can optionally show crossections)
+    PR interface (tools for propagation; 
+                  no deletion, active points are naturally those which have a possible move; 
+                  move itself is an object; moves can be rated)
+    UI interface (includes emitting of mouse/keyboard signals; 
+                  can be implemented with different actual UI; think more)
+                  
+                  ----
+                  
+  propagation design:
+    1. find possible directions given initial steps
+    2. rate the directions
+    
