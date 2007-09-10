@@ -1,0 +1,1 @@
+Program("voxbr", ["main.cpp", "glbase.cpp", "v3.cpp", "volio.cpp", "nifti.cpp", "predicate.cpp"], CPPPATH=["sparsehash/src"], CPPFLAGS=["-g", "-O3"], LIBS=["opengl32", "glu32", "SDL", "SDLmain"])
