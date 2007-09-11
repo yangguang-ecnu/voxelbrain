@@ -93,9 +93,14 @@ size_t find_band(raw_volume & vol, point_space & from, point_list & pts, float m
 	return pts.size();
 };
 
+inline int dist(int a, int b){
+	return (a>b)?(a-b):(b-a);
+	}; //TODO: move to misc
+
 //remove surface vor values [from to]
 int erode_band(raw_volume & vol, point_space & pts, point_list & marked, point_list & killed, float from, float to){
 	point_list to_search;
+	point_list to_propagate;
 	//clearing 
 	int count = 0;
 	for(point_space::iterator iv = pts.begin(); iv !=pts.end(); iv++){
@@ -110,25 +115,35 @@ int erode_band(raw_volume & vol, point_space & pts, point_list & marked, point_l
 		for(int j = -1; j<=1; j++)
 		for(int k = -1; k<=1; k++){
 			V3i around(pnt.x+i, pnt.y+j, pnt.z+k);
-			to_search.insert(key(around));
+			int a = vol(around); int b = -vol(pnt);
+			int diff = (a>b)?(a-b):(b-a);
+			if(diff < 40) to_propagate.insert(key(around)); //checking only similar stuff
+			to_search.insert(key(around)); //where to look for surface
 //			if(pts.find(around) != pts.end())*/to_erase.insert(around);
 			};
 	 }
 	}
-	marked.clear();
-	//erasing 
+	//marked.clear();
+	//adding marked stuff
+	 for(point_list::iterator r = to_propagate.begin(); r != to_propagate.end(); r++){
+		 marked.insert(*r); //we have already inserted interesting stuff
+         count++;
+	 };
+     
+	 //eraze possibly modified points
 	 for(point_list::iterator r = to_search.begin(); r != to_search.end(); r++){
 		pts.erase(*r);
 	 };
-
-	 //updating
+	 
+	 //updating vicinity of possibly modified area
 	 for(point_list::iterator r = to_search.begin(); r != to_search.end(); r++){
 		V3i cur_pnt;
 		 if(is_border(vol, key(*r))){
 			 cur_pnt=key(*r);
 				  pts.insert(pair<int, Point>(key(cur_pnt), calculate_point(vol, cur_pnt)));
-				  if((vol(cur_pnt) >= (from-0.5) ) && (vol(cur_pnt) <= (to+0.5) ))marked.insert(key(cur_pnt));
-				  count++; };};
+			//simple band	  if((vol(cur_pnt) >= (from-0.5) ) && (vol(cur_pnt) <= (to+0.5) ))marked.insert(key(cur_pnt));
+		 };
+	 };
 
 	return count;
 };
@@ -367,7 +382,7 @@ int main(int argc, char **argv)
     exit(-1);
   }
 
-  SDL_WM_SetCaption("Brain.", NULL);
+  SDL_WM_SetCaption("Voxel Brain (1)", NULL);
 
   
 
@@ -463,13 +478,13 @@ FILE * f_colors;
 case SDL_VIDEORESIZE:
   /* ----- Setting up the screen surface --------------- */
 	width = event.resize.w;
-	height = event.resize.h;
+	height = event.resize.h; 
   if((screen = SDL_SetVideoMode(width, height, bpp, flags)) == 0) {
   //  fprintf(stderr, "Video mode set failed: %s\n", SDL_GetError());
     exit(-1);
   }
 
-  SDL_WM_SetCaption("Brain.", NULL);
+  SDL_WM_SetCaption("Brain Voxel", NULL);
 
   
 
