@@ -1,1 +1,24 @@
-Program("voxbr", ["main.cpp", "glbase.cpp", "v3.cpp", "volio.cpp", "nifti.cpp", "predicate.cpp"], CPPPATH=["sparsehash/src"], CPPFLAGS=["-g", "-O3"], LIBS=["opengl32", "glu32", "SDL", "SDLmain"])
+env = Environment()
+conf = Configure(env)
+LIBS=["SDL","SDLmain"]
+
+#checking libs:
+if conf.CheckLib('GL'): 
+	LIBS += ['GL']
+elif conf.CheckLib('opengl32'):
+	LIBS += ['opengl32']
+else:
+	print "Opengl library needed."
+	exit(1)
+
+if conf.CheckLib('GLU'):
+	LIBS += ['GLU']
+elif conf.CheckLib('glu32'):
+	LIBS += ['glu32']
+else:
+	print "Glu library needed."
+	exit(1)
+
+env = conf.Finish()
+
+env.Program("voxbr", ["main.cpp", "glbase.cpp", "v3.cpp", "volio.cpp", "nifti.cpp", "predicate.cpp"], CPPPATH=["sparsehash/src"], CPPFLAGS=["-g", "-O3"], LIBS=["GL", "GLU", "SDL", "SDLmain"])
