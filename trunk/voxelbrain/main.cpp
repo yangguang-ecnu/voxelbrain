@@ -20,7 +20,7 @@ using namespace std;
 
 int FrameTiming();
 
-Propagator gen; //main propagat
+//Propagator gen; //main propagat
 
 
 //point storage
