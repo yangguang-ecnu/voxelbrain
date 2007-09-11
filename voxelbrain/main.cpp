@@ -293,8 +293,8 @@ int main(int argc, char **argv)
   modes editing_mode = SEEDS_NOP;
 	
   const SDL_VideoInfo* info = NULL;
-  int width = 850;
-  int height = 850;
+  int width = 600;
+  int height = 600;
   int bpp = 0;
   int flags = 0;
 
