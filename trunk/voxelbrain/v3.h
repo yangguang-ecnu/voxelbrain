@@ -28,8 +28,8 @@ Basic misc definitions
       //temporary var is required but more readable;
       V3 operator-(const V3 & v) const { return V3(x-v.x, y-v.y, z-v.z);};
       V3 operator+(const V3 & v) const { return V3(x+v.x, y+v.y, z+v.z);};
-      V3 operator*(float m){ return V3((T)(x*m), (T)(y*m), (T)(z*m));};
-      V3 operator/(float m){ return V3((T)(x/m), (T)(y/m), (T)(z/m));};
+      V3 operator*(float m) const { return V3((T)(x*m), (T)(y*m), (T)(z*m));};
+      V3 operator/(float m) const { return V3((T)(x/m), (T)(y/m), (T)(z/m));};
  
       //no temporary vars
       V3 & operator-=(const V3 & v){ x-=v.x; y-=v.y, z-= v.z; return *this;};

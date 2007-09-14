@@ -17,19 +17,19 @@ struct raw_volume{
 	typedef short int MY_DATA;
 	MY_DATA * data;
 
-	float operator ()(int x, int y, int z){
+	float operator ()(int x, int y, int z) const {
 	  return ((float)data[x+dim[0]*y+dim[1]*dim[0]*z]);
 	};
 
-	float operator ()(float x, float y, float z){
+	float operator ()(float x, float y, float z) const {
 	  return ((float)data[(int)x+dim[0]*(int)y+dim[1]*dim[0]*(int)z]);
 	};
 
-	float operator ()(const V3i & wh){
+	float operator ()(const V3i & wh) const {
 	  return ((float)data[wh.x+dim[0]*wh.y+dim[1]*dim[0]*wh.z]);
 	};
 
-	float get(int x, int y, int z){
+	float get(int x, int y, int z) const{
 	  return ((float)data[x+dim[0]*y+dim[1]*dim[0]*z]);
 	};
 

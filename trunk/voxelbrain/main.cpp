@@ -98,7 +98,84 @@ inline int dist(int a, int b){
 	}; //TODO: move to misc
 
 //remove surface vor values [from to]
-int erode_band(raw_volume & vol, point_space & pts, point_list & marked, point_list & killed, float from, float to){
+
+	struct propagator_t {
+		
+		struct step{
+			V3i start;
+			V3i to;
+			float P;
+			bool operator<(const step & other) const{
+				return P > other.P;
+			}
+		};
+		
+
+		typedef vector<step> steps_t;
+		steps_t proposed;
+		point_list active;
+		
+		void plan(const raw_volume & vol); //fill in proposed steps
+		void act(const raw_volume & vol);  //apply the selected steps; //do not alter anything
+		float eval(const step &, const raw_volume & vol);
+	};
+
+void propagator_t::plan(const raw_volume & vol){
+	    proposed.clear(); // remove previous planning
+	    for(point_list::iterator c = active.begin(); c!=active.end(); c++){
+			for(int i = -1; i<=1; i++)//loop around single point
+			for(int j = -1; j<=1; j++)
+			for(int k = -1; k<=1; k++){
+				V3i dir_cur(i,j,k); 
+				step step_cur;
+				step_cur.start = key(*c);
+				step_cur.to = dir_cur;
+				step_cur.P = eval(step_cur, vol);
+				if(step_cur.P > 0){ // if it makes sense at all
+					proposed.push_back(step_cur);
+				}
+			};	    	
+	    };
+	};
+	
+#define ABS(A) (((A)>0)?(A):-(A))
+	
+	float propagator_t::eval(const step & s, const raw_volume & vol){
+		///check if it is valid at all:
+		V3i dest(s.start+s.to);
+		if(active.find(key(dest)) != active.end())return -1.0f;// 1:does not hit active area;
+		if(vol(dest)<=0)return -1.0f; // 2:does not end up in outer space
+		if(vol(s.start)<=0)return -1.0f; // 3:does not _START_ in outer space; something is wrong;
+		float dist=0.0f;
+		V3f tmp((float)s.to.x, (float)s.to.y, (float)s.to.z);
+		float delta = ABS((float)(vol(dest)-vol(s.start))/(tmp.length()));
+        //check if we can escape:
+		for(int i = 1; i < 3; i++){
+		    V3i future_dest(s.to*i+s.start);
+		    if((vol(future_dest)<=0) ||
+		       (active.find(key(future_dest)) != active.end()))return 1.0f; //if we can reach out, go for it.
+		};
+		
+		return 1.0f-delta/1000.0f; //so far just delta
+	}
+	
+	
+	
+	void propagator_t::act(const raw_volume & vol){  //apply the selected steps; //do not alter anything
+		if(proposed.size() < 1)return; //nothing to do
+		sort(proposed.begin(), proposed.end());
+
+		for(int i = 0; i < (proposed.size()/100+1); i++){
+			step cur(proposed[i]);
+			V3i dest(cur.start+cur.to);
+			active.insert(key(dest));
+		};
+	};
+	
+	
+	
+	
+	int erode_band(raw_volume & vol, point_space & pts, point_list & marked, point_list & killed, float from, float to){
 	point_list to_search;
 	point_list to_propagate;
 	//clearing 
@@ -108,20 +185,23 @@ int erode_band(raw_volume & vol, point_space & pts, point_list & marked, point_l
 		float cur = vol(pnt);
 		//	 if((cur >= (from-0.5) ) && (cur <= (to+0.5) ) || (marked.find(iv->first) != marked.end())){
 		if((marked.find(iv->first) != marked.end())){
-        vol.set(pnt, (short)-vol(pnt)); //eroding
  //       vol(iv->first.x, iv->first.y, iv->first.z)=vol(iv->first.x, iv->first.y, iv->first.z); //eroding
 		killed.insert(iv->first);
 		for(int i = -1; i<=1; i++)//loop around single point
 		for(int j = -1; j<=1; j++)
 		for(int k = -1; k<=1; k++){
 			V3i around(pnt.x+i, pnt.y+j, pnt.z+k);
-			int a = vol(around); int b = -vol(pnt);
+			int a = vol(around); int b = vol(pnt);
 			int diff = (a>b)?(a-b):(b-a);
-			if(diff < 40) to_propagate.insert(key(around)); //checking only similar stuff
+			
+//do read-ahead propagation			
+			
+			if(diff < 10) to_propagate.insert(key(around)); //checking only similar stuff
 			to_search.insert(key(around)); //where to look for surface
 //			if(pts.find(around) != pts.end())*/to_erase.insert(around);
 			};
-	 }
+	        if(vol(pnt)>0)vol.set(pnt, (short)-vol(pnt)); //eroding
+		}
 	}
 	//marked.clear();
 	//adding marked stuff
@@ -278,6 +358,8 @@ size_t find_points_predicate(raw_volume & vol, Predicate & fits, point_space & p
 int main(int argc, char **argv)
 {
 
+  propagator_t propagator;
+	
   do_erode = false;
 
   SDL_Surface *screen;
@@ -537,8 +619,10 @@ case SDL_VIDEORESIZE:
 	switch( event.key.keysym.sym ){
 //eroding, fast
 	  case SDLK_e: 
-		printf("Eroded %d points.\n", erode_band(vol, sets.allPoints, sets.allPointsSelected, sets.allPointsToKill, (int)band[0], (int)band[1]));
-	   break;
+		//printf("Eroded %d points.\n", erode_band(vol, sets.allPoints, sets.allPointsSelected, sets.allPointsToKill, (int)band[0], (int)band[1]));
+	   propagator.plan(vol);
+	   propagator.act(vol);
+		  break;
 
 	  case SDLK_g:
 		  do_erode=!do_erode;
@@ -698,14 +782,15 @@ case SDL_VIDEORESIZE:
 
 			//printf("Undoing...\n");
 			cur_undo_step = new undo_step;
-			for(point_list::iterator i = sets.allPointsToKill.begin(); i!=sets.allPointsToKill.end(); i++){
+			for(point_list::iterator i = propagator.active.begin(); i!=propagator.active.end(); i++){
 				cur_undo_step->push_back(*i);
+				V3i cur(key(*i)); if(vol(cur)>0)vol.set(cur,-vol(cur)); //actually deleting
 			};
 			the_undo.push_back(*cur_undo_step);
 			delete cur_undo_step;
 			printf("Saved undo information.\n");
-		    sets.allPointsToKill.clear();
-		    sets.allPoints.clear();
+			propagator.active.clear();
+			sets.allPoints.clear();
  	   	    printf("%d points found.", find_points(vol, sets.allPoints));
   		    printf("Done.\n");
         break;
@@ -787,7 +872,7 @@ case SDL_VIDEORESIZE:
 		};
 	};
 	
- 	  //draw green opaque stuff to kill
+ /*	  //draw green opaque stuff to kill
 		glDisable (GL_BLEND);
 	  glDisable(GL_LIGHTING);
 	  		  glPointSize(POINTSIZE*(float)width/(float)850/zoom);
@@ -799,8 +884,21 @@ case SDL_VIDEORESIZE:
 			    glVertex3f(pos.x, pos.y, pos.z);
 		   }
 	   glEnd();
+*/
 
-
+	glDisable (GL_BLEND);
+  glDisable(GL_LIGHTING);
+  		  glPointSize(POINTSIZE*(float)width/(float)850/zoom);
+  glBegin(GL_POINTS);
+			V3f pos;
+			glColor3f(0.0,1.0,0.0);
+	   for(point_list::iterator i = propagator.active.begin(); i!=propagator.active.end(); i++){
+            grid.flip(pos, key(*i));
+		    glVertex3f(pos.x, pos.y, pos.z);
+	   }
+   glEnd();
+	
+	
 	if(not_hidden && !only_modified){
       glEnable(GL_LIGHTING);
   //glPointSize(POINTSIZE*(float)width/(float)850/zoom);
@@ -903,7 +1001,7 @@ case SDL_VIDEORESIZE:
 	         if(iv.x>0 && iv.y>0 && iv.z>0 && iv.x<vol.dim[0] && iv.y<vol.dim[1] && iv.z<vol.dim[2]) //check that it is here.
 			 {
 				 if(vol(iv.x, iv.y, iv.z)>1.0 && is_border(vol, V3i(iv.x, iv.y, iv.z))){
-				  printf("f(%d,%d,%d)=%f\n", iv.x, iv.y, iv.z, vol(iv.x, iv.y, iv.z)); //here is what we've got
+				  //printf("f(%d,%d,%d)=%f\n", iv.x, iv.y, iv.z, vol(iv.x, iv.y, iv.z)); //here is what we've got
 				  grid.flip(point, V3i(iv.x, iv.y, iv.z)); // actual point
 				  i_point = iv;
 				  goto found;
@@ -914,7 +1012,8 @@ case SDL_VIDEORESIZE:
 	    printf("Cannot locate volume...\n");
         found:
         if(SEEDS_ADD==editing_mode){
-        	sets.allPointsSelected.insert(key(i_point));
+        	//sets.allPointsSelected.insert(key(i_point));
+        	propagator.active.insert(key(i_point));
         	if(update_band_interactively){
         		if(sets.allPointsSelected.size()==1){ //ok, we are starting a new selection
         			band[0]=vol(i_point)-10;
@@ -973,9 +1072,14 @@ case SDL_VIDEORESIZE:
 	}else{
 	  buf[(iy*xraySize+ix)]=70;	    //out of bounds
 	};
-		//cross
-		if(ix==xraySize/2 && (iy < xraySize/4 || iy > 3*xraySize/4 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
-		if(iy==xraySize/2 && (ix < xraySize/4 || ix > 3*xraySize/4 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
+	//cross
+	if(ix==xraySize/2 && (iy < 7*xraySize/16 || iy > 9*xraySize/16 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
+	if(iy==xraySize/2 && (ix < 7*xraySize/16 || ix > 9*xraySize/16 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
+	//hit
+	   if(propagator.active.find(key(V3i(curx, cury, curz))) != propagator.active.end()){ //we hit current selection
+		   buf[(iy*xraySize+ix)]= 255 << 8;
+	   };
+
 	}; 
 
     V3f point2d = GetOGLPos((int)(10), int(10+xraySize), false);
@@ -1001,8 +1105,12 @@ case SDL_VIDEORESIZE:
 	  buf[(iy*xraySize+ix)]= 70 << 8;	    //out of bounds
 	};
 		//cross
-		if(ix==xraySize/2 && (iy < xraySize/4 || iy > 3*xraySize/4 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
-		if(iy==xraySize/2 && (ix < xraySize/4 || ix > 3*xraySize/4 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
+		if(ix==xraySize/2 && (iy < 7*xraySize/16 || iy > 9*xraySize/16 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
+		if(iy==xraySize/2 && (ix < 7*xraySize/16 || ix > 9*xraySize/16 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
+		//hit
+		   if(propagator.active.find(key(V3i(curx, cury, curz))) != propagator.active.end()){ //we hit current selection
+			   buf[(iy*xraySize+ix)]= 255 << 8;
+		   };
 
 	  }; 
 
@@ -1028,10 +1136,15 @@ case SDL_VIDEORESIZE:
 	}else{
 	  buf[(iy*xraySize+ix)]= 70 << 16;	    //out of bounds
 	};
-		//cross
-		if(ix==xraySize/2 && (iy < xraySize/4 || iy > 3*xraySize/4 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
-		if(iy==xraySize/2 && (ix < xraySize/4 || ix > 3*xraySize/4 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
+	//cross
+	if(ix==xraySize/2 && (iy < 7*xraySize/16 || iy > 9*xraySize/16 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
+	if(iy==xraySize/2 && (ix < 7*xraySize/16 || ix > 9*xraySize/16 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
 
+	//hit
+	   if(propagator.active.find(key(V3i(curx, cury, curz))) != propagator.active.end()){ //we hit current selection
+		   buf[(iy*xraySize+ix)]= 255 << 8;
+	   };
+	
 	  }; 
 
     point2d = GetOGLPos((int)(10), int(20+3*xraySize), false);
