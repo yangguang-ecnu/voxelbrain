@@ -8,17 +8,17 @@ if conf.CheckLib('GL'):
 elif conf.CheckLib('opengl32'):
 	ALL_LIBS += ['opengl32']
 else:
-	print "Opengl library needed."
-	exit(1)
+	print "Opengl library needed...continuing."
+	#exit(1)
 
 if conf.CheckLib('GLU'):
 	ALL_LIBS += ['GLU']
 elif conf.CheckLib('glu32'):
 	ALL_LIBS += ['glu32']
 else:
-	print "Glu library needed."
-	exit(1)
+	print "Glu library needed...continuing"
+	#exit(1)
 
 env = conf.Finish()
 
-env.Program("voxbr", ["main.cpp", "glbase.cpp", "v3.cpp", "volio.cpp", "nifti.cpp", "misc.cpp", "undo.cpp", "propagator.cpp"], CPPPATH=["sparsehash/src"], CPPFLAGS=["-g", "-O3"], LIBS=ALL_LIBS)
+env.Program("voxbr", ["main.cpp", "glbase.cpp", "v3.cpp", "volio.cpp", "nifti.cpp", "misc.cpp", "undo.cpp", "propagator.cpp"], CPPPATH=["sparsehash/src"], CPPFLAGS=["-g", "-O3"], LINKFLAGS='-framework OpenGL -framework Foundation -framework AppKit', LIBS=ALL_LIBS)

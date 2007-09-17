@@ -17,7 +17,7 @@ using namespace std;
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_opengl.h>
-#include <GL/glu.h>
+#include <OpenGL/glu.h>
 
 #define POINTSIZE 3.5f
 
