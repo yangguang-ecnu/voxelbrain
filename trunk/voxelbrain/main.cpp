@@ -1,6 +1,8 @@
 #include "glbase.h"
 #include "v3sets.h"
 #include "volio.h"
+#include "propagator.h"
+#include "misc.h"
 
 ///Standard includes
 #include <stdio.h>
@@ -93,87 +95,6 @@ size_t find_band(raw_volume & vol, point_space & from, point_list & pts, float m
   return pts.size();
 };
 
-inline int dist(int a, int b){
-  return (a>b)?(a-b):(b-a);
-}; //TODO: move to misc
-
-//remove surface vor values [from to]
-
-struct propagator_t {
-		
-  struct step{
-    V3i start;
-    V3i to;
-    float P;
-    bool operator<(const step & other) const{
-      return P > other.P;
-    }
-  };
-		
-
-  typedef vector<step> steps_t;
-  steps_t proposed;
-  point_list active;
-		
-  void plan(const raw_volume & vol); //fill in proposed steps
-  void act(const raw_volume & vol);  //apply the selected steps; //do not alter anything
-  float eval(const step &, const raw_volume & vol);
-};
-
-void propagator_t::plan(const raw_volume & vol){
-  proposed.clear(); // remove previous planning
-  for(point_list::iterator c = active.begin(); c!=active.end(); c++){
-    for(int i = -1; i<=1; i++)//loop around single point
-      for(int j = -1; j<=1; j++)
-	for(int k = -1; k<=1; k++){
-	  V3i dir_cur(i,j,k); 
-	  step step_cur;
-	  step_cur.start = key(*c);
-	  step_cur.to = dir_cur;
-	  step_cur.P = eval(step_cur, vol);
-	  if(step_cur.P > 0){ // if it makes sense at all
-	    proposed.push_back(step_cur);
-	  }
-	};	    	
-  };
-};
-	
-#define ABS(A) (((A)>0)?(A):-(A))
-	
-float propagator_t::eval(const step & s, const raw_volume & vol){
-  ///check if it is valid at all:
-  V3i dest(s.start+s.to);
-  if(active.find(key(dest)) != active.end())return -1.0f;// 1:does not hit active area;
-  if(vol(dest)<=0)return -1.0f; // 2:does not end up in outer space
-  if(vol(s.start)<=0)return -1.0f; // 3:does not _START_ in outer space; something is wrong;
-  float dist=0.0f;
-  V3f tmp((float)s.to.x, (float)s.to.y, (float)s.to.z);
-  float delta = ABS((float)(vol(dest)-vol(s.start))/(tmp.length()));
-  //check if we can escape:
-  for(int i = 1; i < 3; i++){
-    V3i future_dest(s.to*i+s.start);
-    if((vol(future_dest)<=0) ||
-       (active.find(key(future_dest)) != active.end()))return 1.0f; //if we can reach out, go for it.
-  };
-		
-  return 1.0f-delta/1000.0f; //so far just delta
-}
-	
-	
-	
-void propagator_t::act(const raw_volume & vol){  //apply the selected steps; //do not alter anything
-  if(proposed.size() < 1)return; //nothing to do
-  sort(proposed.begin(), proposed.end());
-
-  for(int i = 0; i < (proposed.size()/100+1); i++){
-    step cur(proposed[i]);
-    V3i dest(cur.start+cur.to);
-    active.insert(key(dest));
-  };
-};
-	
-	
-	
 	
 int erode_band(raw_volume & vol, point_space & pts, point_list & marked, point_list & killed, float from, float to){
   point_list to_search;
@@ -228,16 +149,6 @@ int erode_band(raw_volume & vol, point_space & pts, point_list & marked, point_l
   return count;
 };
 
-
-
-
-
-float smooth_bell(float x){
-  if(x<0)x=-x;
-  if(x>1)return 0.0f;
-  float square_x = x*x;
-  return 2*square_x*x-3*square_x+1; // 2*x^3-3*x^2+1, unit bell.
-};
 
 //project sceen coordinates into model space.
 
