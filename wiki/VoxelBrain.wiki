@@ -18,8 +18,11 @@ The editing happens in 2 stages:
     * Limit propagation to a color range
  * Features:
     * Interface (WxWidgets]
+
+= Software installation =
+[Build]    
     
     
-    
+ 
  
  
