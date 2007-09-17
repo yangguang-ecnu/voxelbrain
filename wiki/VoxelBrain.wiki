@@ -8,5 +8,6 @@ To study brain based on MRI scans one has to classify voxels into brain/nonbrain
 = Current Approach =
 
 The editing happens in 2 stages:
-  * Interactve detection of anomalies
-  * Fast semi-automatic removal of the anomalies
+  * Interactve detection of anomalies [AnomalyDetection]
+  * Fast semi-automatic removal of the anomalies [AnomalyRemoval]
+ 
