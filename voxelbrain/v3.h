@@ -67,8 +67,6 @@ Basic misc definitions
     V3f unit;  //integer (1,1,1)
   };
 
-  float smoothBell(float x); // f(-1)=0; f(0)=1; f(1)=0.
-
 #endif
 
 
