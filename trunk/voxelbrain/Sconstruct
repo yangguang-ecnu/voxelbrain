@@ -21,4 +21,4 @@ else:
 
 env = conf.Finish()
 
-env.Program("voxbr", ["main.cpp", "glbase.cpp", "v3.cpp", "volio.cpp", "nifti.cpp", "misc.cpp", "propagator.cpp"], CPPPATH=["sparsehash/src"], CPPFLAGS=["-g", "-O3"], LIBS=ALL_LIBS)
+env.Program("voxbr", ["main.cpp", "glbase.cpp", "v3.cpp", "volio.cpp", "nifti.cpp", "misc.cpp", "undo.cpp", "propagator.cpp"], CPPPATH=["sparsehash/src"], CPPFLAGS=["-g", "-O3"], LIBS=ALL_LIBS)

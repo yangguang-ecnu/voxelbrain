@@ -15,7 +15,7 @@ inline int dist(int a, int b){
 //remove surface vor values [from to]
 
 struct propagator_t {
-
+	
 	struct step {
 		V3i start;
 		V3i to;
@@ -28,9 +28,12 @@ struct propagator_t {
   typedef vector<step> steps_t;
   steps_t proposed;
   point_list active;
+  float half_band_size;
+  float band_center;
   float min;
   float max;
 
+  void set_band(const raw_volume & vol);
   void plan(const raw_volume & vol); //fill in proposed steps
   void act(const raw_volume & vol);  //apply the selected steps; //do not alter anything
   float eval(const step &, const raw_volume & vol);
