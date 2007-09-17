@@ -3,6 +3,7 @@
 #include "volio.h"
 #include "propagator.h"
 #include "misc.h"
+#include "undo.h"
 
 ///Standard includes
 #include <stdio.h>
@@ -21,6 +22,7 @@ using namespace std;
 #define POINTSIZE 3.5f
 
 int FrameTiming();
+
 
 //Propagator gen; //main propagat
 
@@ -275,6 +277,7 @@ int main(int argc, char **argv)
 
   SDL_Surface *screen;
   SDL_Event event;
+  int application_times = 1;
   int quit = 0;
   bool not_hidden = true;
   bool update_band_interactively = false;
@@ -324,10 +327,14 @@ int main(int argc, char **argv)
   typedef vector<Point> Storage; 
   Storage points;
 
+  /*
   typedef vector<unsigned int> undo_step;
   typedef vector<undo_step> undo_buffer;
   undo_buffer the_undo;
   undo_step * cur_undo_step;
+  */
+  
+  undo hard_undo; //undoes final shape modifications
 
   
   //array manipulation
@@ -513,14 +520,17 @@ int main(int argc, char **argv)
       case SDL_QUIT:
 	quit = 1;
 	break;
-
       case SDL_MOUSEMOTION:
+ 
 	coord_updated = true;
         if(event.motion.state & SDL_BUTTON(1)){ //update rotation of the brain
 	  rotx+=event.motion.xrel;
 	  roty+=event.motion.yrel;
 	};
 
+	 if(event.motion.state & SDL_BUTTON(4))printf("Wheel up\n");
+	 if(event.motion.state & SDL_BUTTON(5))printf("Wheel down\n");
+	
 	mousex = event.motion.x;
 	mousey = event.motion.y;
         break;
@@ -530,8 +540,10 @@ int main(int argc, char **argv)
 	  //eroding, fast
 	case SDLK_e: 
 	  //printf("Eroded %d points.\n", erode_band(vol, sets.allPoints, sets.allPointsSelected, sets.allPointsToKill, (int)band[0], (int)band[1]));
-	  propagator.plan(vol);
+		for(int i = 0; i < application_times; i++){
+		propagator.plan(vol);
 	  propagator.act(vol);
+		}; application_times*=2;
 	  break;
 
 	case SDLK_g:
@@ -671,16 +683,17 @@ int main(int argc, char **argv)
 
 
 	case SDLK_z:
-	  if(the_undo.empty()){
+	  if(hard_undo.empty()){
 	    printf("No undo information.\n");
 	    break;
+	  }else{;
+	  	undo::undo_step cur;
+	  	hard_undo.restore(cur);
+		  for(undo::undo_step::iterator i = cur.begin(); i!=cur.end(); i++){
+		    vol.set(key(*i), -vol(case_pnt)); 
+		  };		
 	  };
-	  cur_undo_step = & the_undo.back();
-	  for(undo_step::iterator i = cur_undo_step->begin(); i!=cur_undo_step->end(); i++){
-	    case_pnt = key(*i);
-	    vol.set(case_pnt, -vol(case_pnt)); 
-	  };		
-	  the_undo.pop_back();
+
 	  sets.allPointsToKill.clear();
 	  sets.allPoints.clear();
 	  printf("%d points found ", find_points(vol, sets.allPoints));
@@ -690,14 +703,12 @@ int main(int argc, char **argv)
 	  //undo	
         case SDLK_a:
 
-	  //printf("Undoing...\n");
-	  cur_undo_step = new undo_step;
-	  for(point_list::iterator i = propagator.active.begin(); i!=propagator.active.end(); i++){
-	    cur_undo_step->push_back(*i);
+      application_times = 1;
+      for(point_list::iterator i = propagator.active.begin(); i!=propagator.active.end(); i++){
 	    V3i cur(key(*i)); if(vol(cur)>0)vol.set(cur,-vol(cur)); //actually deleting
+        hard_undo.add_point(cur); //adding to undo
 	  };
-	  the_undo.push_back(*cur_undo_step);
-	  delete cur_undo_step;
+	  hard_undo.save();
 	  printf("Saved undo information.\n");
 	  propagator.active.clear();
 	  sets.allPoints.clear();
@@ -924,6 +935,7 @@ int main(int argc, char **argv)
       if(SEEDS_ADD==editing_mode){
 	//sets.allPointsSelected.insert(key(i_point));
 	propagator.active.insert(key(i_point));
+	propagator.set_band(vol);
 	if(update_band_interactively){
 	  if(sets.allPointsSelected.size()==1){ //ok, we are starting a new selection
 	    band[0]=vol(i_point)-10;

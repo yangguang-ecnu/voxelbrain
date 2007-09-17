@@ -9,18 +9,6 @@ using namespace std;
 void propagator_t::plan(const raw_volume & vol){
   proposed.clear(); // remove previous planning
   
-  //analyzing stuff:
-  min = 10000;
-	max = 0;
-	for (point_list::iterator c = active.begin(); c!=active.end(); c++) {
-		int cur = vol(key(*c));
-		if (cur > max)
-			max = cur;
-		if (cur < min)
-			min=cur;
-	};
-  
-  // go around same points and plan the move
   for(point_list::iterator c = active.begin(); c!=active.end(); c++){
     for(int i = -1; i<=1; i++)//loop around single point
       for(int j = -1; j<=1; j++)
@@ -37,7 +25,24 @@ void propagator_t::plan(const raw_volume & vol){
   };
 };
 	
+void propagator_t::set_band(const raw_volume & vol) {
+	//analyzing stuff:
+	int min = 10000;
+	int max = 0;
+	for (point_list::iterator c = active.begin(); c!=active.end(); c++) {
+		int cur = vol(key(*c));
+		if (cur > max)
+			max = cur;
+		if (cur < min)
+			min=cur;
+	};
 
+	half_band_size = (float)(max-min)/2.0f;
+	//add margins
+	half_band_size = half_band_size*1.2;
+	band_center = (float)(max+min)/2;
+	// go around same points and plan the move
+}
 	
 float propagator_t::eval(const step & s, const raw_volume & vol){
   ///check if it is valid at all:
@@ -50,10 +55,6 @@ float propagator_t::eval(const step & s, const raw_volume & vol){
   float delta = ABS((float)(vol(dest)-vol(s.start))/(tmp.length()));
 
   //taking into account band (so that we don't shift gradually to unwanted densities)
-  float half_band_size = (float)(max-min)/2.0f;
-  //add margins
-  half_band_size = half_band_size*1.3;
-  float band_center = (float)(max+min)/2;
   float in_band = smooth_bell((vol(dest)-band_center)/half_band_size);
   
   //check if we can escape:
