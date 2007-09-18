@@ -1,8 +1,11 @@
+import os
+os.system('./rev_gen.sh') #generate version number
 env = Environment()
 conf = Configure(env)
 ALL_LIBS=["SDL","SDLmain"]
 ALL_LINKFLAGS=''
 ALL_CPPFLAGS=["-g", "-O3"]
+ALL_SOURCES=["glbase.cpp", "v3.cpp", "volio.cpp", "nifti.cpp", "misc.cpp", "undo.cpp", "propagator.cpp"]
 
 #checking libs:
 if conf.CheckLib('GL'): 
@@ -25,4 +28,5 @@ else:
 
 env = conf.Finish()
 
-env.Program("voxbr", ["main.cpp", "glbase.cpp", "v3.cpp", "volio.cpp", "nifti.cpp", "misc.cpp", "undo.cpp", "propagator.cpp"], CPPPATH=["sparsehash/src"], CPPFLAGS=ALL_CPPFLAGS, LINKFLAGS=ALL_LINKFLAGS, LIBS=ALL_LIBS)
+env.Program("voxbr", ["main.cpp"]+ALL_SOURCES , CPPPATH=["sparsehash/src"], CPPFLAGS=ALL_CPPFLAGS, LINKFLAGS=ALL_LINKFLAGS, LIBS=ALL_LIBS)
+env.Program("test", ["test.cpp"]+ALL_SOURCES, CPPPATH=["sparsehash/src"], CPPFLAGS=ALL_CPPFLAGS, LINKFLAGS=ALL_LINKFLAGS, LIBS=ALL_LIBS)

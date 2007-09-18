@@ -1,3 +1,5 @@
+#include "revision.h"
+
 #include "glbase.h"
 #include "v3sets.h"
 #include "volio.h"
@@ -386,8 +388,11 @@ int main(int argc, char **argv)
     exit(-1);
   }
 
-  SDL_WM_SetCaption("Voxel Brain (1)", NULL);
-
+#ifdef SVN_REVISION
+  SDL_WM_SetCaption(SVN_REVISION, NULL);
+#else
+  SDL_WM_SetCaption("Voxel Brain", NULL);
+#endif  
   
 
 
@@ -694,7 +699,9 @@ int main(int argc, char **argv)
 	  	undo::undo_step cur;
 	  	hard_undo.restore(cur);
 		  for(undo::undo_step::iterator i = cur.begin(); i!=cur.end(); i++){
-		    vol.set(key(*i), -vol(case_pnt)); 
+		      V3i cur(key(*i));
+			  //printf("Restored %d, %d, %d\n", cur.x, cur.y, cur.z);
+			  if(vol(cur)<0)vol.set(cur, -vol(cur)); 
 		  };		
 	  };
 
@@ -710,7 +717,7 @@ int main(int argc, char **argv)
       application_times = 1;
       for(point_list::iterator i = propagator.active.begin(); i!=propagator.active.end(); i++){
 	    V3i cur(key(*i)); if(vol(cur)>0)vol.set(cur,-vol(cur)); //actually deleting
-        hard_undo.add_point(cur); //adding to undo
+        hard_undo.add_point(*i); //adding to undo
 	  };
 	  hard_undo.save();
 	  printf("Saved undo information.\n");
