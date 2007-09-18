@@ -7,12 +7,12 @@ using namespace std;
 
 struct undo {
 	
-	undo(){clear();};
+	undo(){cur_step = new undo_step; clear(); };
 	
    typedef std::vector<unsigned int> undo_step;
-   typedef std::vector<undo_step> undo_buffer;
+   typedef std::vector<undo_step *> undo_buffer;
    undo_buffer the_undo;
-   point_list cur_step;
+   undo_step * cur_step;
 
    void clear(); //reset the undo stack
    void add_point(const V3i &); //add a point to the current step

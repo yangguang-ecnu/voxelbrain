@@ -17,7 +17,11 @@ using namespace std;
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_opengl.h>
-#include <OpenGL/glu.h>
+#ifdef MACOSX
+#include <OpenGL/glu.h> //for macosx
+#else
+#include <GL/glu.h>
+#endif
 
 #define POINTSIZE 3.5f
 
