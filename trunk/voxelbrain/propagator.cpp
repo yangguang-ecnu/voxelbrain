@@ -76,9 +76,20 @@ void propagator_t::act(const raw_volume & vol){  //apply the selected steps; //d
   for(int i = 0; i < (proposed.size()/100+1); i++){
     step cur(proposed[i]);
     V3i dest(cur.start+cur.to);
+    undo_selection.add_point(key(dest));
     active.insert(key(dest));
   };
+  undo_selection.save();
 };
+
+void propagator_t::undo_step(){
+	  if(undo_selection.empty())return; //nothing to undo, lah
+	  undo::undo_step cur;
+	  undo_selection.restore(cur);
+	  for(undo::undo_step::iterator i = cur.begin(); i != cur.end(); i++)
+		  active.erase(*i);
+}
+
 	
 	
 	

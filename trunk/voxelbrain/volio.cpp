@@ -21,9 +21,14 @@ void raw_volume::load(const string file_name){
 void raw_volume::save(const string file_name){
 	int size = dim[0]*dim[1]*dim[2]; 
 	FILE * out = fopen(file_name.c_str(), "wb");
-    if(0 == out){
+    
+	for(int i = 0; i < size; i++)if(data[i]<0)data[i]=0;
+
+	
+	if(0 == out){
       printf("File failed to open.\n"); exit(1);
     };
+    
     if(size != fwrite(data, sizeof(unsigned short int), size, out)){
       printf("Cannot write file properly.\n"); delete[] data ; exit(1);
    };
