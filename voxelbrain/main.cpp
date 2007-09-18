@@ -286,6 +286,7 @@ int main(int argc, char **argv)
   int application_times = 1;
   int quit = 0;
   bool not_hidden = true;
+  bool hide_selection = false;
   bool update_band_interactively = false;
   bool only_modified = false;
   bool only_points = false;
@@ -360,14 +361,8 @@ int main(int argc, char **argv)
 
   V3f u(1.0f/(float)vol.dim[0], 1.0f/(float)vol.dim[0], 1.0f/(float)vol.dim[0]);
   Vtr grid(V3f(-u.x*vol.dim[0]/2.0f,-u.y*vol.dim[1]/2.0f,-u.z*vol.dim[2]/2.0f), u);
-
  
   was = SDL_GetTicks();
-
-
-
-
-      
 
   info = SDL_GetVideoInfo();
   bpp = info->vfmt->BitsPerPixel;
@@ -388,7 +383,7 @@ int main(int argc, char **argv)
     exit(-1);
   }
 
-#ifdef SVN_REVISION
+#ifdef SVN_REVISION //revision was generated successfully
   SDL_WM_SetCaption(SVN_REVISION, NULL);
 #else
   SDL_WM_SetCaption("Voxel Brain", NULL);
@@ -444,6 +439,9 @@ int main(int argc, char **argv)
   float roty = 0.0f;
   float mousex = 0.0f; 
   float mousey = 0.0f;
+  
+  bool do_erosion=false;
+  int do_erosion_level=0; //select if we want undo or propagation
 
   V3f point;	
   V3i i_point;	
@@ -530,7 +528,16 @@ int main(int argc, char **argv)
 	quit = 1;
 	break;
       case SDL_MOUSEMOTION:
- 
+
+    if(do_erosion){ //propagate
+    	if(event.motion.yrel < 0){
+    		propagator.undo_step();
+    	}else{
+    	    propagator.plan(vol);
+            propagator.act(vol);
+    	};
+        break;
+    }
 	coord_updated = true;
         if(event.motion.state & SDL_BUTTON(1)){ //update rotation of the brain
 	  rotx+=event.motion.xrel;
@@ -543,20 +550,35 @@ int main(int argc, char **argv)
 	mousex = event.motion.x;
 	mousey = event.motion.y;
         break;
-      
+
+      case SDL_KEYUP:
+    	switch( event.key.keysym.sym ){
+      	case SDLK_e:
+      		do_erosion = false;
+      		break;
+      	case SDLK_t:
+      		editing_mode = SEEDS_NOP;
+      		break;
+      	case SDLK_g:
+      		hide_selection = false;
+      		break;
+    	};
+    	break;
+    	
       case SDL_KEYDOWN:
 	switch( event.key.keysym.sym ){
 	  //eroding, fast
 	case SDLK_e: 
+		do_erosion = true;
 	  //printf("Eroded %d points.\n", erode_band(vol, sets.allPoints, sets.allPointsSelected, sets.allPointsToKill, (int)band[0], (int)band[1]));
-		for(int i = 0; i < application_times; i++){
+	/*	for(int i = 0; i < application_times; i++){
 		propagator.plan(vol);
 	  propagator.act(vol);
-		}; application_times*=2;
+		}; application_times*=2; */
 	  break;
 
-	case SDLK_g:
-	  do_erode=!do_erode;
+	case SDLK_g: //temoroaily disable selection
+	  hide_selection=true;
 	  break;
 
 	case SDLK_o:
@@ -574,12 +596,8 @@ int main(int argc, char **argv)
 	  break;
 
 	case SDLK_t:
-	  if(editing_mode != SEEDS_ADD)
 	    editing_mode = SEEDS_ADD;
-	  else
-	    editing_mode = SEEDS_NOP;
-		  
-	  break;
+   	  break;
 
 
 	  //counting
@@ -826,7 +844,7 @@ int main(int argc, char **argv)
     glColor3f(0.0,1.0,0.0);
     for(point_list::iterator i = propagator.active.begin(); i!=propagator.active.end(); i++){
       grid.flip(pos, key(*i));
-      glVertex3f(pos.x, pos.y, pos.z);
+      if(! hide_selection ) glVertex3f(pos.x, pos.y, pos.z);
     }
     glEnd();
 	
@@ -978,6 +996,7 @@ int main(int argc, char **argv)
 
     //printf("(%f:%f:%f)\n", cur_coords.x, cur_coords.y, cur_coords.z); 
     if(section.shown()){
+    	bool section_border;
       // area:
       const int xraySize = 200;
       const int xrayBufLength = xraySize*xraySize*3;
@@ -987,6 +1006,10 @@ int main(int argc, char **argv)
       //x- y
       for(int ix  = 0; ix < xraySize; ix++) 
 	for(int iy  = 0; iy < xraySize; iy++){
+	  if((ix < 2) || (ix >= (xraySize - 2)) || (iy < 2) || (iy >= (xraySize - 2)))
+		  section_border = true;
+	  else
+		  section_border = false;
 	  int curx = (int)(cur_coords.x + (ix - (xraySize/2))/2);
 	  int cury = (int)(cur_coords.y + (iy - (xraySize/2))/2);
 	  int curz = (int)(cur_coords.z);
@@ -998,18 +1021,18 @@ int main(int argc, char **argv)
 	    // if(allPointsToKill.find(pack(V3i(curx, cury, curz))) != allPointsToKill.end())
 	    //	 buf[(iy*xraySize+ix)]= 0;
 	    if(cvol <= 0){	  
-	      buf[(iy*xraySize+ix)]= 70;
+	    	  buf[(iy*xraySize+ix)]= section_border?255:0;
 	    }else{
 	      buf[(iy*xraySize+ix)]= cvol + (cvol << 8) + (cvol << 16);
 	    };//if(vol_shell( curx, cury, curz ) > 1)buf[(iy*xraySize+ix)]=100;
 	  }else{
-	    buf[(iy*xraySize+ix)]=70;	    //out of bounds
+	    buf[(iy*xraySize+ix)]=section_border?255:0;	    //out of bounds
 	  };
 	  //cross
 	  if(ix==xraySize/2 && (iy < 7*xraySize/16 || iy > 9*xraySize/16 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
 	  if(iy==xraySize/2 && (ix < 7*xraySize/16 || ix > 9*xraySize/16 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
 	  //hit
-	  if(propagator.active.find(key(V3i(curx, cury, curz))) != propagator.active.end()){ //we hit current selection
+	  if(!(hide_selection) && propagator.active.find(key(V3i(curx, cury, curz))) != propagator.active.end()){ //we hit current selection
 	    buf[(iy*xraySize+ix)]= 255 << 8;
 	  };
 
@@ -1022,7 +1045,12 @@ int main(int argc, char **argv)
       //z - x
       for(int ix  = 0; ix < xraySize; ix++) 
 	for(int iy  = 0; iy < xraySize; iy++){
-	  int curx = cur_coords.x + (ix - (xraySize/2))/2;
+		  if((ix < 2) || (ix >= (xraySize - 2)) || (iy < 2) || (iy >= (xraySize - 2)))
+			  section_border = true;
+		  else
+			  section_border = false;
+
+		int curx = cur_coords.x + (ix - (xraySize/2))/2;
 	  int curz = cur_coords.z + (iy - (xraySize/2))/2;
 	  int cury = cur_coords.y;
 	  if(( (curx < vol.dim[0]) && (curx > 0) ) && // check bounds
@@ -1030,18 +1058,18 @@ int main(int argc, char **argv)
 	     ( (curz < vol.dim[2]) && (curz > 0) )){
 	    int cvol = vol(curx, cury, curz)/4;
 	    // if(vol(curx, cury, curz) > band[0] && vol(curx, cury, curz) < band[1])cvol=1;  
-	    if(cvol <= 0)	  buf[(iy*xraySize+ix)]= 70 << 8;
+	    if(cvol <= 0)	  buf[(iy*xraySize+ix)]= section_border?(255 << 8):0;
 	    else
 	      buf[(iy*xraySize+ix)]= cvol + (cvol << 8) + (cvol << 16);
 	    //if(vol_shell( curx, cury, curz ) > 1)buf[(iy*xraySize+ix)]=100;
 	  }else{
-	    buf[(iy*xraySize+ix)]= 70 << 8;	    //out of bounds
+	    buf[(iy*xraySize+ix)]= section_border?(255 << 8):0;	    //out of bounds
 	  };
 	  //cross
 	  if(ix==xraySize/2 && (iy < 7*xraySize/16 || iy > 9*xraySize/16 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
 	  if(iy==xraySize/2 && (ix < 7*xraySize/16 || ix > 9*xraySize/16 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
 	  //hit
-	  if(propagator.active.find(key(V3i(curx, cury, curz))) != propagator.active.end()){ //we hit current selection
+	  if(!(hide_selection) && propagator.active.find(key(V3i(curx, cury, curz))) != propagator.active.end()){ //we hit current selection
 	    buf[(iy*xraySize+ix)]= 255 << 8;
 	  };
 
@@ -1054,7 +1082,12 @@ int main(int argc, char **argv)
       //y- z
       for(int ix  = 0; ix < xraySize; ix++) 
 	for(int iy  = 0; iy < xraySize; iy++){
-	  int curz = (int)(cur_coords.z + (ix - (xraySize/2))/2);
+		  if((ix < 2) || (ix >= (xraySize - 2)) || (iy < 2) || (iy >= (xraySize - 2)))
+			  section_border = true;
+		  else
+			  section_border = false;
+
+		int curz = (int)(cur_coords.z + (ix - (xraySize/2))/2);
 	  int cury = (int)(cur_coords.y + (iy - (xraySize/2))/2);
 	  int curx = cur_coords.x;
 	  if(( (curx < vol.dim[0]) && (curx > 0) ) && // check bounds
@@ -1062,19 +1095,19 @@ int main(int argc, char **argv)
 	     ( (curz < vol.dim[2]) && (curz > 0) )){
 	    int cvol = vol(curx, cury, curz)/4;
 	    // if(vol(curx, cury, curz) > band[0] && vol(curx, cury, curz) < band[1])cvol=1;  
-	    if(cvol <= 0)	  buf[(iy*xraySize+ix)]= 70 << 16;
+	    if(cvol <= 0)	  buf[(iy*xraySize+ix)]= section_border?(255 << 16):0;
 	    else
 	      buf[(iy*xraySize+ix)]= cvol + (cvol << 8) + (cvol << 16);
 	    //if(vol_shell( curx, cury, curz ) > 1)buf[(iy*xraySize+ix)]=100;
 	  }else{
-	    buf[(iy*xraySize+ix)]= 70 << 16;	    //out of bounds
+	    buf[(iy*xraySize+ix)]= section_border?(255 << 16):0;	    //out of bounds
 	  };
 	  //cross
 	  if(ix==xraySize/2 && (iy < 7*xraySize/16 || iy > 9*xraySize/16 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
 	  if(iy==xraySize/2 && (ix < 7*xraySize/16 || ix > 9*xraySize/16 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
 
 	  //hit
-	  if(propagator.active.find(key(V3i(curx, cury, curz))) != propagator.active.end()){ //we hit current selection
+	  if(!(hide_selection) && propagator.active.find(key(V3i(curx, cury, curz))) != propagator.active.end()){ //we hit current selection
 	    buf[(iy*xraySize+ix)]= 255 << 8;
 	  };
 	

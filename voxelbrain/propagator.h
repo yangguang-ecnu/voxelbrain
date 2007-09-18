@@ -4,6 +4,7 @@
 #include "v3sets.h"
 #include "nifti.h"
 #include "volio.h"
+#include "undo.h"
 #include <vector>
 
 using namespace std;
@@ -15,6 +16,8 @@ inline int dist(int a, int b){
 //remove surface vor values [from to]
 
 struct propagator_t {
+	
+	undo undo_selection;
 	
 	struct step {
 		V3i start;
@@ -37,6 +40,7 @@ struct propagator_t {
   void plan(const raw_volume & vol); //fill in proposed steps
   void act(const raw_volume & vol);  //apply the selected steps; //do not alter anything
   float eval(const step &, const raw_volume & vol);
-};
+  void undo_step();// undo last step
+  };
 
 #endif /*PROPAGATOR_H_*/
