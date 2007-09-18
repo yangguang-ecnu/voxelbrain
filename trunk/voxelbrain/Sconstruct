@@ -1,6 +1,8 @@
 env = Environment()
 conf = Configure(env)
 ALL_LIBS=["SDL","SDLmain"]
+ALL_LINKFLAGS=''
+ALL_CPPFLAGS=["-g", "-O3"]
 
 #checking libs:
 if conf.CheckLib('GL'): 
@@ -8,7 +10,7 @@ if conf.CheckLib('GL'):
 elif conf.CheckLib('opengl32'):
 	ALL_LIBS += ['opengl32']
 else:
-	print "Opengl library needed...continuing."
+	print "Opengl library needed..."
 	#exit(1)
 
 if conf.CheckLib('GLU'):
@@ -16,9 +18,11 @@ if conf.CheckLib('GLU'):
 elif conf.CheckLib('glu32'):
 	ALL_LIBS += ['glu32']
 else:
-	print "Glu library needed...continuing"
+	print "Glu library needed...assuming MacOsX"
+	ALL_LINKFLAGS='-framework OpenGL -framework Foundation -framework AppKit'
+	ALL_CPPFLAGS+=["-DMACOSX"]
 	#exit(1)
 
 env = conf.Finish()
 
-env.Program("voxbr", ["main.cpp", "glbase.cpp", "v3.cpp", "volio.cpp", "nifti.cpp", "misc.cpp", "undo.cpp", "propagator.cpp"], CPPPATH=["sparsehash/src"], CPPFLAGS=["-g", "-O3"], LINKFLAGS='-framework OpenGL -framework Foundation -framework AppKit', LIBS=ALL_LIBS)
+env.Program("voxbr", ["main.cpp", "glbase.cpp", "v3.cpp", "volio.cpp", "nifti.cpp", "misc.cpp", "undo.cpp", "propagator.cpp"], CPPPATH=["sparsehash/src"], CPPFLAGS=ALL_CPPFLAGS, LINKFLAGS=ALL_LINKFLAGS, LIBS=ALL_LIBS)
