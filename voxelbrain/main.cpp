@@ -317,6 +317,8 @@ int main(int argc, char **argv)
   float alert_center = 5.0f;
   float alert_width = 1.0f;
 
+  bool disable_lighting = false;
+  
   /* ----- SDL init --------------- */
   if(SDL_Init(SDL_INIT_VIDEO) < 0) {
     //fprintf(stderr, "Video initialization failed: %s\n", SDL_GetError());
@@ -408,7 +410,7 @@ int main(int argc, char **argv)
 
   /* ------Lighting -------*/
 
-  glEnable(GL_LIGHTING);
+  if(!disable_lighting)glEnable(GL_LIGHTING);
   glEnable(GL_NORMALIZE);
   GLfloat specular[] = {0.1f, 0.1f, 0.1f, 0.1f};
   glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
@@ -441,6 +443,7 @@ int main(int argc, char **argv)
   float mousey = 0.0f;
   
   bool do_erosion=false;
+
   int do_erosion_level=0; //select if we want undo or propagation
 
   V3f point;	
@@ -455,6 +458,9 @@ int main(int argc, char **argv)
   Storage::iterator i;
   V3i case_pnt;
 
+  unsigned int background_color = 0;
+  
+  
   //dumping:
   FILE * f;
   FILE * f_colors;
@@ -512,7 +518,7 @@ int main(int argc, char **argv)
 
 	/* ------Lighting -------*/
 
-	glEnable(GL_LIGHTING);
+	if(!disable_lighting)glEnable(GL_LIGHTING);
 	glEnable(GL_NORMALIZE);
 	//  GLfloat specular[] = {0.1, 0.1, 0.1, 0.1};
 	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
@@ -581,10 +587,10 @@ int main(int argc, char **argv)
 	  hide_selection=true;
 	  break;
 
-	case SDLK_o:
+/*	case SDLK_o:
 	  update_band_interactively =!update_band_interactively;
 	  break;
-
+*/
 
 	case SDLK_c:
 	  use_colors=!use_colors;
@@ -685,12 +691,19 @@ int main(int argc, char **argv)
 	  break;
 	  //change band
 	case SDLK_b:
-	  do_band = !do_band;
-	  band[0]=band[1];// signals not to use it for update;
+	  printf("Trying to change background color...\n");
+	  //do_band = !do_band;
+	  //band[0]=band[1];// signals not to use it for update;
+	  background_color = (background_color == 0)?((255<<16)+(255<<8)+255):0; 	  
+ 	  
 	  break;
 
 	case SDLK_v:
 	  not_hidden = !not_hidden;
+	  break;
+        
+	case SDLK_o:
+	  disable_lighting = !disable_lighting;
 	  break;
         
 	case SDLK_x:
@@ -850,12 +863,12 @@ int main(int argc, char **argv)
 	
 	
     if(not_hidden && !only_modified){
-      glEnable(GL_LIGHTING);
+    	if(!disable_lighting)glEnable(GL_LIGHTING);
       //glPointSize(POINTSIZE*(float)width/(float)850/zoom);
       glDisable (GL_BLEND);
     }else{
 
-      glEnable(GL_LIGHTING);
+    	if(!disable_lighting)glEnable(GL_LIGHTING);
       glEnable (GL_BLEND); glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
     };
 
@@ -931,9 +944,10 @@ int main(int argc, char **argv)
 
     //mouse
 
-    point = GetOGLPos((int)mousex, (int)mousey);
-    //grid.flip(pnt, ipos);
-
+    if(!do_erosion){
+      point = GetOGLPos((int)mousex, (int)mousey);
+      //grid.flip(pnt, ipos);
+    };
     section.move(point);
     section.draw();
     ///cur
@@ -1021,12 +1035,12 @@ int main(int argc, char **argv)
 	    // if(allPointsToKill.find(pack(V3i(curx, cury, curz))) != allPointsToKill.end())
 	    //	 buf[(iy*xraySize+ix)]= 0;
 	    if(cvol <= 0){	  
-	    	  buf[(iy*xraySize+ix)]= section_border?255:0;
+	    	  buf[(iy*xraySize+ix)]= section_border?255:background_color;
 	    }else{
 	      buf[(iy*xraySize+ix)]= cvol + (cvol << 8) + (cvol << 16);
 	    };//if(vol_shell( curx, cury, curz ) > 1)buf[(iy*xraySize+ix)]=100;
 	  }else{
-	    buf[(iy*xraySize+ix)]=section_border?255:0;	    //out of bounds
+	    buf[(iy*xraySize+ix)]=section_border?255:background_color;	    //out of bounds
 	  };
 	  //cross
 	  if(ix==xraySize/2 && (iy < 7*xraySize/16 || iy > 9*xraySize/16 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
@@ -1058,12 +1072,12 @@ int main(int argc, char **argv)
 	     ( (curz < vol.dim[2]) && (curz > 0) )){
 	    int cvol = vol(curx, cury, curz)/4;
 	    // if(vol(curx, cury, curz) > band[0] && vol(curx, cury, curz) < band[1])cvol=1;  
-	    if(cvol <= 0)	  buf[(iy*xraySize+ix)]= section_border?(255 << 8):0;
+	    if(cvol <= 0)	  buf[(iy*xraySize+ix)]= section_border?(255 << 8):background_color;
 	    else
 	      buf[(iy*xraySize+ix)]= cvol + (cvol << 8) + (cvol << 16);
 	    //if(vol_shell( curx, cury, curz ) > 1)buf[(iy*xraySize+ix)]=100;
 	  }else{
-	    buf[(iy*xraySize+ix)]= section_border?(255 << 8):0;	    //out of bounds
+	    buf[(iy*xraySize+ix)]= section_border?(255 << 8):background_color;	    //out of bounds
 	  };
 	  //cross
 	  if(ix==xraySize/2 && (iy < 7*xraySize/16 || iy > 9*xraySize/16 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
@@ -1095,12 +1109,12 @@ int main(int argc, char **argv)
 	     ( (curz < vol.dim[2]) && (curz > 0) )){
 	    int cvol = vol(curx, cury, curz)/4;
 	    // if(vol(curx, cury, curz) > band[0] && vol(curx, cury, curz) < band[1])cvol=1;  
-	    if(cvol <= 0)	  buf[(iy*xraySize+ix)]= section_border?(255 << 16):0;
+	    if(cvol <= 0)	  buf[(iy*xraySize+ix)]= section_border?(255 << 16):background_color;
 	    else
 	      buf[(iy*xraySize+ix)]= cvol + (cvol << 8) + (cvol << 16);
 	    //if(vol_shell( curx, cury, curz ) > 1)buf[(iy*xraySize+ix)]=100;
 	  }else{
-	    buf[(iy*xraySize+ix)]= section_border?(255 << 16):0;	    //out of bounds
+	    buf[(iy*xraySize+ix)]= section_border?(255 << 16):background_color;	    //out of bounds
 	  };
 	  //cross
 	  if(ix==xraySize/2 && (iy < 7*xraySize/16 || iy > 9*xraySize/16 )) buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
