@@ -28,6 +28,8 @@ struct propagator_t {
 		}
 	};
 
+  V3i poi; //point of interest;	
+	
   typedef vector<step> steps_t;
   steps_t proposed;
   point_list active;
