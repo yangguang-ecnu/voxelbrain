@@ -63,7 +63,7 @@ Point calculate_point(raw_volume & vol, V3i & w){
   tmp.norm /= -tmp.norm.length();
   max = vol(w);
   tmp.col.set(max, max, max);
-  tmp.col /= 400.0;
+  tmp.col /= (float)vol.max;
   //todo calculate volume;
 	
   return tmp;
@@ -271,11 +271,52 @@ size_t find_points_predicate(raw_volume & vol, Predicate & fits, point_space & p
 
 
 
+struct illumination {
+	
+	void setup(float K, float F_2){
+		if(F_2 > 0.99f)F_2=0.99f; if(F_2 < 0.01f)F_2=0.01f;
+		if(K>100.0f)K=100.0f; if(K<1.0f)K=1.0f;
+		//K [1..100], F[0..2]
+		middle = F_2*2.0f;
+		setup_single(K,F_2*2.0f,a_left, b_left);
+		setup_single(K,2.0-F_2*2.0f,a_right, b_right);
+	};
+	
+	float eval(float _x){
+		float x = 2*_x;
+
+		if(x >=2.0f)return 1.0f;
+		if(x <= 0.0f)return 0.0f;
+		if(x < middle){
+			return (x*x*a_left+x*b_left)/2.0f;
+		}else{
+			float x_r = (2.0f-x);
+			float r = x_r*x_r*a_right+x_r*b_right;
+			return (2.0f-r)/2.0f;
+		};
+	};
+	
+private:
+	float a_left; float a_right; float b_left; float b_right;
+	float middle;
+	
+	void setup_single(float K, float F, float &a, float &b){
+		//ax^2+bx; f'(F)=K; f(F)=1
+		a = (F*K-1.0f)/F/F;
+		b = 2.0/F-K;
+	};
+    
+
+};
+
 /////////////////////////////////////   MAIN   ////////////////////////////
 
 
 int main(int argc, char **argv)
 {
+	
+  illumination ill;
+  ill.setup(5, 0.5);
 
   propagator_t propagator;
 	
@@ -345,11 +386,17 @@ int main(int argc, char **argv)
   
   undo hard_undo; //undoes final shape modifications
 
+  //handling environment
+  environment volenv;
+  if(!volenv.parse(argc, argv)){
+	  printf(volenv.err.c_str());
+	  exit(1);
+  }
   
   //array manipulation
   raw_volume vol;
-  vol.read_nifti_file("bSS081a_1_3.hdr", "bSS081a_1_3.img");
-  vol.load("bSS081a_1_3.img");
+  vol.read_nifti_file(volenv.input_header.c_str(), volenv.input_data.c_str());
+  vol.load(volenv.input_data.c_str());
   //Array<float, 3> vol(load_data_float("bSS081a_1_3.img", TinyVector<int, 3> (vol_data.dim[0], vol_data.dim[1], vol_data.dim[2]) ));
 
   sets.allPoints.clear();
@@ -510,8 +557,8 @@ int main(int argc, char **argv)
 	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	//  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-	glDisable(GL_POINT_SMOOTH);
-	//glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+	glEnable(GL_POINT_SMOOTH);
+	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 	glPointSize(POINTSIZE*(float)width/(float)850/zoom);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_NORMALIZE);
@@ -919,6 +966,10 @@ int main(int argc, char **argv)
       //glColor3f(0.5+0.5*alert,0.5,0.5+factor);
       //alert = 1.0;
       //  glColor3f(3.0*points[i+6]/max_val+0.5*alert,3.0*points[i+6]/max_val-0.5*alert,3.0*points[i+6]/max_val+factor-0.5*alert);
+      
+     tmp.col.x = ill.eval(tmp.col.x); 
+      tmp.col.y = tmp.col.x; 
+      tmp.col.z = tmp.col.x; 
       if(!use_colors)tmp.col.set(0.5,0.5,0.5);
       if(alert > 0.5)tmp.col.set(1.0,0.0,0.0);
       glColor4f(tmp.col.x,tmp.col.y,tmp.col.z, 0.1+0.9*alert);
@@ -1030,7 +1081,7 @@ int main(int argc, char **argv)
 	  if(( (curx < vol.dim[0]) && (curx > 0) ) && // check bounds
 	     ( (cury < vol.dim[1]) && (cury > 0) ) &&
 	     ( (curz < vol.dim[2]) && (curz > 0) )){
-	    int cvol = (int)vol(curx, cury, curz)/4;
+	    int cvol = 255*(int)vol(curx, cury, curz)/vol.max;
 	    //  if(vol(curx, cury, curz) > band[0] && vol(curx, cury, curz) < band[1])cvol=1;  
 	    // if(allPointsToKill.find(pack(V3i(curx, cury, curz))) != allPointsToKill.end())
 	    //	 buf[(iy*xraySize+ix)]= 0;
@@ -1070,7 +1121,7 @@ int main(int argc, char **argv)
 	  if(( (curx < vol.dim[0]) && (curx > 0) ) && // check bounds
 	     ( (cury < vol.dim[1]) && (cury > 0) ) &&
 	     ( (curz < vol.dim[2]) && (curz > 0) )){
-	    int cvol = vol(curx, cury, curz)/4;
+	    int cvol = 255*vol(curx, cury, curz)/vol.max;
 	    // if(vol(curx, cury, curz) > band[0] && vol(curx, cury, curz) < band[1])cvol=1;  
 	    if(cvol <= 0)	  buf[(iy*xraySize+ix)]= section_border?(255 << 8):background_color;
 	    else
@@ -1107,7 +1158,7 @@ int main(int argc, char **argv)
 	  if(( (curx < vol.dim[0]) && (curx > 0) ) && // check bounds
 	     ( (cury < vol.dim[1]) && (cury > 0) ) &&
 	     ( (curz < vol.dim[2]) && (curz > 0) )){
-	    int cvol = vol(curx, cury, curz)/4;
+	    int cvol = 255*vol(curx, cury, curz)/vol.max;
 	    // if(vol(curx, cury, curz) > band[0] && vol(curx, cury, curz) < band[1])cvol=1;  
 	    if(cvol <= 0)	  buf[(iy*xraySize+ix)]= section_border?(255 << 16):background_color;
 	    else
