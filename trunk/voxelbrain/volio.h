@@ -8,11 +8,13 @@
 using namespace std;
 
 struct raw_volume{
-	int read_nifti_file(char * hdr_file, char * data_file);
-	int write_nifti_file(char * hdr_file, char * data_file);
+	int read_nifti_file(const char * hdr_file, const char * data_file);
+	int write_nifti_file(const char * hdr_file, const char * data_file);
 	void load(const string file_name);
 	void save(const string file_name);
 	int dim[3];
+	
+	int min; int max; 
 	
 	typedef short int MY_DATA;
 	MY_DATA * data;

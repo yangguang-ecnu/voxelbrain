@@ -106,7 +106,7 @@ typedef short int MY_DATATYPE;
  * read_nifti_file
  *
  **********************************************************************/
-int raw_volume::read_nifti_file(char * hdr_file, char * data_file)
+int raw_volume::read_nifti_file(const char * hdr_file, const char * data_file)
 {
 nifti_1_header hdr;
 FILE *fp;
@@ -181,8 +181,8 @@ if (hdr.scl_slope != 0) {
 
 
 /********** print mean of data */
-int min = 10000;
-int max = 0;
+min = 10000;
+max = 0;
 int voxel_count = 0;
 total = 0;
 for (i=0; i<(unsigned int)hdr.dim[1]*hdr.dim[2]*hdr.dim[3]; i++){
@@ -212,7 +212,7 @@ return(0);
  * TR is 1500ms
  *
  **********************************************************************/
-int  raw_volume::write_nifti_file(char * hdr_file, char * data_file)
+int  raw_volume::write_nifti_file(const char * hdr_file, const char * data_file)
 {
 nifti_1_header hdr;
 nifti1_extender pad={0,0,0,0};
