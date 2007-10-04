@@ -112,7 +112,6 @@ nifti_1_header hdr;
 FILE *fp;
 size_t ret,i;
 double total;
-//MY_DATATYPE *data=NULL;
 
 
 /********** open and read header */
@@ -159,17 +158,34 @@ if (ret != 0) {
 
 
 /********** allocate buffer and read first 3D volume from data file */
+int bpv = hdr.bitpix / 8; //bytes per voxel
+
+//raw buffer
+void * raw_data = malloc(bpv * hdr.dim[1]*hdr.dim[2]*hdr.dim[3]);
+//allocating the data to be used
 data = (MY_DATATYPE *) malloc(sizeof(MY_DATATYPE) * hdr.dim[1]*hdr.dim[2]*hdr.dim[3]);
+
 if (data == NULL) {
         fprintf(stderr, "\nError allocating data buffer for %s\n",data_file);
         exit(1);
 }
-ret = fread(data, sizeof(MY_DATATYPE), hdr.dim[1]*hdr.dim[2]*hdr.dim[3], fp);
+ret = fread(raw_data, bpv, hdr.dim[1]*hdr.dim[2]*hdr.dim[3], fp);
 printf("Read %d out of %d items", ret, hdr.dim[1]*hdr.dim[2]*hdr.dim[3]);
-if (ret != hdr.dim[1]*hdr.dim[2]*hdr.dim[3]) {
+if(ret == hdr.dim[1]*hdr.dim[2]*hdr.dim[3]) {
+	for (i=0; i<(unsigned int)hdr.dim[1]*hdr.dim[2]*hdr.dim[3]; i++){
+		//once again, lousy.
+		
+		switch(bpv){
+		case 1: data[i] = ((unsigned char *)raw_data)[i]; break;
+		case 2: data[i] = ((unsigned short *)raw_data)[i]; break;
+		case 4: data[i] = ((unsigned int *)raw_data)[i]; break;
+		};
+	};
+} else {
         fprintf(stderr, "\nError reading volume 1 from %s (%d)\n",data_file,ret);
         exit(1);
 }
+free(raw_data); 
 fclose(fp);
 
 
