@@ -55,4 +55,6 @@ class PointMapBase: public hash_set<unsigned int> {};
 typedef PointMapBase point_space;
 typedef PointSetBase point_list;
 
+void update_border(point_list & border, const point_list & all); //makes sure that the border is really border;
+
 #endif /*V3SETS_H_*/

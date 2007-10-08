@@ -352,6 +352,19 @@ private:
 int main(int argc, char **argv)
 {
 	
+  //state	
+	  int application_times = 1;
+	  int quit = 0;
+	  bool not_hidden = true;
+	  bool hide_selection = false;
+	  bool update_band_interactively = false;
+	  bool only_modified = false;
+	  bool only_points = false;
+	  bool use_colors = true;
+	  bool proper_normal = true;
+	  enum modes {SEEDS_ADD, SEEDS_REMOVE, SEEDS_NOP};
+	  modes editing_mode = SEEDS_NOP;
+	
   illumination ill;
   ill.setup(2, 0.2);
 
@@ -361,17 +374,6 @@ int main(int argc, char **argv)
 
   SDL_Surface *screen;
   SDL_Event event;
-  int application_times = 1;
-  int quit = 0;
-  bool not_hidden = true;
-  bool hide_selection = false;
-  bool update_band_interactively = false;
-  bool only_modified = false;
-  bool only_points = false;
-  bool use_colors = true;
-  bool proper_normal = true;
-  enum modes {SEEDS_ADD, SEEDS_REMOVE, SEEDS_NOP};
-  modes editing_mode = SEEDS_NOP;
 	
   const SDL_VideoInfo* info = NULL;
   int width = 600;
@@ -409,6 +411,8 @@ int main(int argc, char **argv)
   //stuff:
   Xs section;
   //generate points:
+  int displayList = glGenLists(1);
+  bool update_list=true;
 
   //storage
   typedef vector<Point> Storage; 
@@ -469,11 +473,12 @@ int main(int argc, char **argv)
     exit(-1);
   }
 
-#ifdef SVN_REVISION //revision was generated successfully
+#ifndef SVN_REVISION //revision was generated successfully
+#define SVN_REVISION "Voxel Brain"
+#endif
+
+  
   SDL_WM_SetCaption(SVN_REVISION, NULL);
-#else
-  SDL_WM_SetCaption("Voxel Brain", NULL);
-#endif  
   
 
 
@@ -518,7 +523,7 @@ int main(int argc, char **argv)
      }
      }*/
 
-  Plane = glGenLists (1);
+  //Plane = glGenLists (1);
 
   //structure 
   float rotx = 0.0f; //rel coords
@@ -626,6 +631,8 @@ int main(int argc, char **argv)
     	    propagator.plan(vol);
             propagator.act(vol);
     	};
+    	printf("Update is requested.");
+    	update_list=true;
         break;
     }
 	coord_updated = true;
@@ -837,6 +844,7 @@ int main(int argc, char **argv)
 	  hard_undo.save();
 	  printf("Saved undo information.\n");
 	  propagator.active.clear();
+	  propagator.border.clear();
 	  sets.allPoints.clear();
 	  printf("%d points found.", find_points(vol, sets.allPoints));
 	  printf("Done.\n");
@@ -870,6 +878,10 @@ int main(int argc, char **argv)
 	  printf("Done.\n");
 	  break;
 
+	case SDLK_F2:
+		update_list=true;
+		break;
+	  
 	case SDLK_y: // add sphere
 	  printf("Modifying shape...\n");
 	  for(int i=0;i<vol.dim[0];i++){
@@ -897,7 +909,7 @@ int main(int argc, char **argv)
     /* ----- Blitting on the screen --------------- */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
+ 
 		
     glLoadIdentity();
     glScalef(4.0f, 4.0f, 4.0f);
@@ -934,16 +946,29 @@ int main(int argc, char **argv)
     */
 
     glDisable (GL_BLEND);
-    glDisable(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
     glPointSize(POINTSIZE*(float)width/(float)850/zoom);
-    glBegin(GL_POINTS);
+    if(update_list){
+    	printf("Updating the list.\n");	
+    	glNewList(1, GL_COMPILE_AND_EXECUTE);
+    glBegin(GL_QUADS);
+    //glBegin(GL_POINTS);
     V3f pos;
     glColor3f(0.0,1.0,0.0);
-    for(point_list::iterator i = propagator.active.begin(); i!=propagator.active.end(); i++){
+    for(point_list::iterator i = propagator.border.begin(); i!=propagator.border.end(); i++){
       grid.flip(pos, key(*i));
-      if(! hide_selection ) glVertex3f(pos.x, pos.y, pos.z);
+      if(! hide_selection ) {
+    	  gen_sphere(pos, 0.011, 7);
+    	  //glVertex3f(pos.x, pos.y, pos.z);
+      }
     }
     glEnd();
+    glEndList();
+     update_list=false;
+   }else{
+    	glCallList(1);
+    };
+   
 	
 	
     if(not_hidden && !only_modified){
@@ -979,10 +1004,13 @@ int main(int argc, char **argv)
       glPointSize(POINTSIZE*(float)width/(float)850/zoom);
     };
 
-    glBegin(GL_POINTS);
+
+    vector<Point> surfels;
+    //  glBegin(GL_QUADS);
+      glBegin(GL_POINTS);
 
     //  for(point_space::iterator i = allPoints.begin(); i !=allPoints.end(); i++){
-    for(pnt_sorted::iterator i = points_to_sort.begin(); i !=points_to_sort.end(); i++){
+    for(pnt_sorted::iterator i = points_to_sort.begin();  i !=points_to_sort.end(); i++){
       Point tmp = *i;
       //  if((vol(ipos.x,ipos.y,ipos.z)>=band[0] && (vol(ipos.x,ipos.y,ipos.z)<=band[1]))  ||
       // (!(ipos.x%5) && !(ipos.y%5) && !(ipos.z%5))){
@@ -1015,14 +1043,75 @@ int main(int argc, char **argv)
 #endif
       //\if(0 == (cur % 34*9) || (points[i+6] > 0.00001))printf("%f\n", points[i+6]);
 
-      if(proper_normal){ 
+      if(proper_normal ){ 
 	glNormal3f(tmp.norm.x, tmp.norm.y, tmp.norm.z); 
       }else{
 	glNormal3f(pnt.x,pnt.y,pnt.z);
       };
+      if(((pnt-point).length2() > 0.01)){
       glVertex3f(pnt.x,pnt.y,pnt.z);
-    };
+      }else{
+    	  //push it to be rendered with spheres;
+    	  surfels.push_back(tmp);
+      }
+  //    gen_sphere(pnt, 0.006, 5);
+    }; //    for(pnt_sorted::iterator i = points_to_sort.begin();  i !=points_to_sort.end(); i++){
+
     glEnd();
+
+      glBegin(GL_QUADS);
+    //  glBegin(GL_POINTS);
+
+    //  for(point_space::iterator i = allPoints.begin(); i !=allPoints.end(); i++){
+    for(pnt_sorted::iterator i = points_to_sort.begin();  i !=points_to_sort.end(); i++){
+      Point tmp = *i;
+      //  if((vol(ipos.x,ipos.y,ipos.z)>=band[0] && (vol(ipos.x,ipos.y,ipos.z)<=band[1]))  ||
+      // (!(ipos.x%5) && !(ipos.y%5) && !(ipos.z%5))){
+      V3f pnt;
+      grid.flip(pnt, tmp.pos);
+
+#if 1 //highlight
+      float factor = smooth_bell((pnt-point).length2()*100);
+      float alert;
+      //      if(((points[i+6])>mousex/5-mousey/10) && ((points[i+6])<mousex/5+mousey/10))
+      //if(vol(tmp.pos.x,tmp.pos.y,tmp.pos.z)>=band[0] && (vol(tmp.pos.x,tmp.pos.y,tmp.pos.z)<=band[1]))
+      if(sets.allPointsSelected.find(key(tmp.pos))!=sets.allPointsSelected.end())	 //not in the list  
+	alert=1.0;//smoothBell((float)(points[i+6]-alert_center)/(float)alert_width);
+      else{ 
+	alert=0.0;
+	if(only_modified)continue;
+      };
+      //glColor3f(0.5+0.5*alert,0.5,0.5+factor);
+      //alert = 1.0;
+      //  glColor3f(3.0*points[i+6]/max_val+0.5*alert,3.0*points[i+6]/max_val-0.5*alert,3.0*points[i+6]/max_val+factor-0.5*alert);
+      
+     tmp.col.x = ill.eval(tmp.col.x); 
+      tmp.col.y = tmp.col.x; 
+      tmp.col.z = tmp.col.x; 
+      if(!use_colors)tmp.col.set(0.5,0.5,0.5);
+      if(alert > 0.5)tmp.col.set(1.0,0.0,0.0);
+      glColor4f(tmp.col.x,tmp.col.y,tmp.col.z, 0.1+0.9*alert);
+#else //don't highlight
+      glColor3f((i%10)*0.1f,0.5f,0.5f);
+#endif
+      //\if(0 == (cur % 34*9) || (points[i+6] > 0.00001))printf("%f\n", points[i+6]);
+
+      if(proper_normal ){ 
+	glNormal3f(tmp.norm.x, tmp.norm.y, tmp.norm.z); 
+      }else{
+	glNormal3f(pnt.x,pnt.y,pnt.z);
+      };
+      if(((pnt-point).length2() < 0.01)){
+      gen_sphere(pnt, 0.01, 5);
+      };
+      }; //    for(pnt_sorted::iterator i = points_to_sort.begin();  i !=points_to_sort.end(); i++){
+
+    glEnd();
+    
+    
+    
+    
+    
     glDisable (GL_BLEND);
     glDisable(GL_LIGHTING);		
 
@@ -1065,7 +1154,8 @@ int main(int argc, char **argv)
     found:
       if(SEEDS_ADD==editing_mode){
 	//sets.allPointsSelected.insert(key(i_point));
-	propagator.active.insert(key(i_point));
+    		propagator.active.insert(key(i_point));
+    		propagator.border.insert(key(i_point));
 	propagator.set_band(vol);
 	if(update_band_interactively){
 	  if(sets.allPointsSelected.size()==1){ //ok, we are starting a new selection
@@ -1079,13 +1169,14 @@ int main(int argc, char **argv)
       coord_updated=false;
     };
     //      glCallList(Plane);
-    glDisable(GL_LIGHTING);
-    glDisable(GL_DEPTH_TEST);
-    glBegin(GL_POINTS);
-    glColor3f(0.0f,1.0f,0.0f);
-    glVertex3f(point.x,
+    glEnable(GL_LIGHTING);
+   // glDisable(GL_DEPTH_TEST);
+    glBegin(GL_QUADS);
+    glColor3f(1.0f,0.4f,0.0f);
+ /*   glVertex3f(point.x,
 	       point.y,
-	       point.z);
+	       point.z); */
+    gen_sphere(point, 0.012,7);
     glEnd();
     glEnable(GL_DEPTH_TEST);
     //}
