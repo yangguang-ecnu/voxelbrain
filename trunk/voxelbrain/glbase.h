@@ -11,6 +11,8 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_opengl.h>
 
+#include <vector>
+
   
   class Xs {
   public:
@@ -30,5 +32,7 @@
     void plane(int first, int second, int third, float size, bool closed = false);
 
   };
-	
-#endif // __globjects_h__
+
+  void gen_sphere(const V3f & in, float diameter, int precision);
+  
+  #endif // __globjects_h__

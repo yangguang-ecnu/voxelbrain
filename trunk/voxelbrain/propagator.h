@@ -33,6 +33,7 @@ struct propagator_t {
   typedef vector<step> steps_t;
   steps_t proposed;
   point_list active;
+  point_list border;
   float half_band_size;
   float band_center;
   float min;

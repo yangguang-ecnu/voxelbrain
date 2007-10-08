@@ -45,3 +45,24 @@ void Xs::plane(int first, int second, int third, float d, bool closed ){
   };
   if(closed)glVertex3f(pos.x+d*corners[0][first], pos.y + d*corners[0][second], pos.z + d*corners[0][third]);
 };
+
+void sphere_param(const V3f & center , int i, int j, float diameter, int precision){
+	float scale = diameter/2.0; 
+	float dx = 3.14159 / precision;
+	float dy = 3.14159 / precision;
+	V3f cur(sin(dx*i)*sin(dy*j), cos(dx*i)*sin(dy*j), cos(dy*j));
+	glNormal3f(cur.x, cur.y, cur.z);
+	glVertex3f(scale*cur.x+center.x, scale*cur.y+center.y, scale*cur.z+center.z);
+}
+
+void gen_sphere(const V3f & in, float diameter, int precision){
+	for(int i = 0; i < (precision*2); i++)
+		for(int j = 0; j < precision; j++){
+			sphere_param(in, i, j, diameter, precision);
+			sphere_param(in, i, j+1, diameter, precision);
+			sphere_param(in, i+1, j+1, diameter, precision);
+			sphere_param(in, i+1, j, diameter, precision);
+		}
+};
+
+

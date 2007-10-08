@@ -5,7 +5,7 @@ conf = Configure(env)
 ALL_LIBS=["SDL","SDLmain"]
 ALL_LINKFLAGS=''
 ALL_CPPFLAGS=["-g", "-O3"]
-ALL_SOURCES=["glbase.cpp", "v3.cpp", "volio.cpp", "nifti.cpp", "misc.cpp", "undo.cpp", "propagator.cpp"]
+ALL_SOURCES=["glbase.cpp", "v3.cpp", "v3sets.cpp", "volio.cpp", "nifti.cpp", "misc.cpp", "undo.cpp", "propagator.cpp"]
 
 #checking libs:
 if conf.CheckLib('GL'): 
