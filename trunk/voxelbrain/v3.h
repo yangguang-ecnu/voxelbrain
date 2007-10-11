@@ -60,6 +60,9 @@ Basic misc definitions
   class Vtr{
   public:
     Vtr(const V3f & _z, const V3f _u):zero(_z),unit(_u){};
+    Vtr():zero(0,0,0), unit(1,1,1){};
+    void 
+    operator=(const Vtr in){zero = in.zero; unit=in.unit;};
     V3i & flip(V3i & out, const V3f & in); 
     V3f & flip(V3f & out, const V3i & in);
   private:

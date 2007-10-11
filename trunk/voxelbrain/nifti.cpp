@@ -108,7 +108,7 @@ typedef short int MY_DATATYPE;
  **********************************************************************/
 int raw_volume::read_nifti_file(const char * hdr_file, const char * data_file)
 {
-nifti_1_header hdr;
+
 FILE *fp;
 size_t ret,i;
 double total;
@@ -230,8 +230,8 @@ return(0);
  **********************************************************************/
 int  raw_volume::write_nifti_file(const char * hdr_file, const char * data_file)
 {
-nifti_1_header hdr;
-nifti1_extender pad={0,0,0,0};
+//nifti_1_header hdr;
+//nifti1_extender pad={0,0,0,0};
 FILE *fp;
 int ret,i;
 //MY_DATATYPE *data=NULL;
@@ -259,8 +259,8 @@ else {
         
 
 /********** fill in the minimal default header fields */
-memset((void *)&hdr, 0, sizeof(hdr)); //zerowing
-hdr.sizeof_hdr = MIN_HEADER_SIZE;
+//memset((void *)&hdr, 0, sizeof(hdr)); //zerowing
+/*hdr.sizeof_hdr = MIN_HEADER_SIZE;
 hdr.dim[0] = 4;
 hdr.dim[1] = 64;
 hdr.dim[2] = 64;
@@ -284,7 +284,6 @@ else
         strncpy(hdr.magic, "ni1\0", 4);
 
 
-/********** allocate buffer and fill with dummy data  */
 data = (MY_DATATYPE *) malloc(sizeof(MY_DATATYPE) * hdr.dim[1]*hdr.dim[2]*hdr.dim[3]*hdr.dim[4]);
 if (data == NULL) {
         fprintf(stderr, "\nError allocating data buffer for %s\n",data_file);
@@ -294,7 +293,7 @@ if (data == NULL) {
 for (i=0; i<hdr.dim[1]*hdr.dim[2]*hdr.dim[3]*hdr.dim[4]; i++)
 data[i] = (raw_volume::MY_DATA)(i / hdr.scl_slope);
 
-
+*/
 /********** write first 348 bytes of header   */
 fp = fopen(hdr_file,"w");
 if (fp == NULL) {
@@ -306,47 +305,39 @@ if (ret != 1) {
         fprintf(stderr, "\nError writing header file %s\n",hdr_file);
         exit(1);
 }
+    fclose(fp);     /* close .hdr file */
+	int bpv = hdr.bitpix / 8; //bytes per voxel
+    printf("Trying to do %d bpv\n", bpv);
+	//raw buffer
+	void * raw_data = malloc(bpv * hdr.dim[1]*hdr.dim[2]*hdr.dim[3]);
+		for (i=0; i<(unsigned int)hdr.dim[1]*hdr.dim[2]*hdr.dim[3]; i++){
+			//once again, lousy.
+			
+			switch(bpv){
+			case 1: ((unsigned char *)raw_data)[i] = data[i]; break;
+			case 2: ((unsigned short *)raw_data)[i] = data[i]; break;
+			case 4: ((unsigned int *)raw_data)[i] = data[i]; break;
+			};
+		};
 
-
-/********** if nii, write extender pad and image data   */
-if (do_nii == 1) {
-
-        ret = fwrite(&pad, 4, 1, fp);
-        if (ret != 1) {
-                fprintf(stderr, "\nError writing header file extension pad %s\n",hdr_file);
-                exit(1);
-        }
-
-        ret = fwrite(data, (size_t)(hdr.bitpix/8), hdr.dim[1]*hdr.dim[2]*hdr.dim[3]*hdr.dim[4], fp);
-        if (ret != hdr.dim[1]*hdr.dim[2]*hdr.dim[3]*hdr.dim[4]) {
-                fprintf(stderr, "\nError writing data to %s\n",hdr_file);
-                exit(1);
-        }
-
-        fclose(fp);
-}
-
-
-/********** if hdr/img, close .hdr and write image data to .img */
-else {
-
-        fclose(fp);     /* close .hdr file */
 
         fp = fopen(data_file,"wb");
         if (fp == NULL) {
                 fprintf(stderr, "\nError opening data file %s for write\n",data_file);
                 exit(1);
         }
-        ret = fwrite(data, (size_t)(hdr.bitpix/8), hdr.dim[1]*hdr.dim[2]*hdr.dim[3]*hdr.dim[4], fp);
-        if (ret != hdr.dim[1]*hdr.dim[2]*hdr.dim[3]*hdr.dim[4]) {
-                fprintf(stderr, "\nError writing data to %s\n",data_file);
-                exit(1);
-        }
+        ret = fwrite(raw_data, bpv, hdr.dim[1]*hdr.dim[2]*hdr.dim[3]*hdr.dim[4], fp);
+        printf("written %d itens\n", ret);
+        // if (ret != hdr.dim[1]*hdr.dim[2]*hdr.dim[3]*hdr.dim[4]) {
+        //        fprintf(stderr, "\nError writing data to %s\n",data_file);
+        //        exit(1);
+      //  }
 
+        free(raw_data);
         fclose(fp);
-}
+
 
 
 
 return(0);
-}
+};

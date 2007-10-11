@@ -1,4 +1,6 @@
+#include "nifti.h"
 #include "volio.h"
+
 
 
 void raw_volume::load(const string file_name){

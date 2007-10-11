@@ -4,10 +4,14 @@
 #include <string>
 #include <stdlib.h>
 #include "v3.h"
+#include "nifti.h"
 
 using namespace std;
 
 struct raw_volume{
+
+	nifti_1_header hdr;
+	
 	int read_nifti_file(const char * hdr_file, const char * data_file);
 	int write_nifti_file(const char * hdr_file, const char * data_file);
 	void load(const string file_name);
