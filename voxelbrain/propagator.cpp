@@ -10,7 +10,7 @@ using namespace std;
 void propagator_t::plan(const raw_volume & vol){
   proposed.clear(); // remove previous planning
   
-  for(point_list::iterator c = border.begin(); c!=border.end(); c++){
+  for(point_list::iterator c = active.begin(); c!=active.end(); c++){
     for(int i = -1; i<=1; i++)//loop around single point
       for(int j = -1; j<=1; j++)
 	for(int k = -1; k<=1; k++){
@@ -79,12 +79,12 @@ void propagator_t::act(const raw_volume & vol){  //apply the selected steps; //d
     V3i dest(cur.start+cur.to);
     undo_selection.add_point(key(dest));
     active.insert(key(dest));
-    border.insert(key(dest));
+ //   border.insert(key(dest));
     poi = dest; //set point of interest
   };
   undo_selection.save();
-  update_border(border, active);
-  printf("border size: %d; totl size %d;\n", border.size(), active.size());
+ // update_border(border, active);
+ // printf("border size: %d; totl size %d;\n", border.size(), active.size());
 };
 
 void propagator_t::undo_step(){
