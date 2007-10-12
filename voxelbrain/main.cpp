@@ -100,24 +100,28 @@ int main_module::start(int argc, char **argv) {
 					break;
 				}
 				coord_updated = true;
-				if (editing_mode != SEEDS_ADD && event.motion.state
+				if (!shift_pressed && editing_mode != SEEDS_ADD && event.motion.state
 						& SDL_BUTTON(1)) { //update rotation of the brain
 					rotx+=event.motion.xrel;
 					roty+=event.motion.yrel;
 				}
 				;
-
+				mousex = event.motion.x;
+				mousey = event.motion.y;
+				
 				if (editing_mode == SEEDS_ADD && event.motion.state
-						& SDL_BUTTON(1))
-					select_point();
-
+						& SDL_BUTTON(1)){
+					if(!shift_pressed)select_point();
+					catch_cursor(V3i(1,0,0), V3i(0,-1,0), 10+100, 10+100, 100);
+					catch_cursor(V3i(1,0,0), V3i(0,0,1), 10+100, 10+210+100, 100);
+					catch_cursor(V3i(0,1,0), V3i(0,0,-1), 10+100, 10+2*210+100, 100);
+				};
 				if (event.motion.state & SDL_BUTTON(4))
 					printf("Wheel up\n");
 				if (event.motion.state & SDL_BUTTON(5))
 					printf("Wheel down\n");
 
-				mousex = event.motion.x;
-				mousey = event.motion.y;
+
 				break;
 
 				/*************************************
@@ -238,18 +242,21 @@ int main_module::start(int argc, char **argv) {
 
 		//mouse
 
-		if (!do_erosion) {
-			point = GetOGLPos((int)mousex, (int)mousey);
+		if (!do_erosion ) {
+			if(!shift_pressed)point = GetOGLPos((int)mousex, (int)mousey);
 			//grid.flip(pnt, ipos);
 		};
-		section.move(point);
-		section.draw();
+		
+	//	if(shift_pressed){
+		  section.move(point);
+		  section.draw();
+	//	};
 		///cur
 		//print x,y,z
 		V3f dir = GetOGLDirection();
 		dir/=dir.length();
 
-		if (coord_updated) {
+		if (coord_updated && !shift_pressed) {
 			for (int i = 0; i<100; i++) {
 				for (int sgn = -1; sgn <= 1; sgn+=2) {
 					V3f cur_v = point+(dir*0.0001*i*sgn);
@@ -295,10 +302,6 @@ int main_module::start(int argc, char **argv) {
 		//}
 
 
-/*		V3f cur_coords(point.x*vol.dim[0]+vol.dim[0]/2, point.y*vol.dim[0]
-				+vol.dim[1]/2, point.z*vol.dim[0]+vol.dim[2]/2);
-*/
-		//printf("(%f:%f:%f)\n", cur_coords.x, cur_coords.y, cur_coords.z); 
 		if (section.shown()) {
 
 			bool section_border;
@@ -307,7 +310,6 @@ int main_module::start(int argc, char **argv) {
 			const int xrayBufLength = xraySize*xraySize*3;
 			int buf[xrayBufLength*4+1];
 			glDisable(GL_DEPTH_TEST);
-			//x- y
 			crossection_plane(V3i(1,0,0), V3i(0,1,0), 10, 10, 0);
 			crossection_plane(V3i(1,0,0), V3i(0,0,-1), 10, 10+210, 1);
 			crossection_plane(V3i(0,1,0), V3i(0,0,1), 10, 10+2*210, 2);

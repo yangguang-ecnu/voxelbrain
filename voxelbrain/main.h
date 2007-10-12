@@ -233,6 +233,7 @@ struct main_module {
 	void render_selection();
 	void render_points();
 	void crossection_plane(const V3i & dx, const V3i & dy, int  xpos, int  ypos, int color);
+	void catch_cursor(const V3i & dx, const V3i & dy, int xcenter, int ycenter, int r);
 	void sort_points();
 	
 	void dump_test_data();

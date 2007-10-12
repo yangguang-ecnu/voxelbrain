@@ -9,4 +9,6 @@
 float smooth_bell(float x); // f(-1)=0; f(0)=1; f(1)=0.
 
 
+#define ABS( X) (((X)>0)?(X):(-(X)))
+
 #endif /*MISC_H_*/
