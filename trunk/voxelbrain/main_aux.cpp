@@ -281,6 +281,20 @@ void main_module::render_points(){
 	glEnd();
 }
 
+void main_module::catch_cursor(const V3i & dx, const V3i & dy, int xcenter, int ycenter, int r){
+	printf("Checking mouse %d-%d\n", mousex, mousey);
+	V3i cur_coords;
+	V3i res;
+	if((ABS(mousex - xcenter) < r) && (ABS(mousey - ycenter) < r)){
+		printf("Got inside...%d, %d\n", (mousex - xcenter), (mousey - ycenter));
+		grid.flip(cur_coords, point);
+		res=cur_coords+dx*((mousex-xcenter)/3)+dy*((mousey-ycenter)/3);
+//		grid.flip(point, res);
+		propagator.active.insert(key(res));
+		
+	}
+}
+
 void main_module::crossection_plane(const V3i & dx, const V3i & dy, int  xpos, int  ypos, int color){
 	bool section_border;
 	// area:
