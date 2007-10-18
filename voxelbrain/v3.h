@@ -44,7 +44,7 @@ Basic misc definitions
       float distance(const V3 & v) {return sqrtf((float)distance2());};
 
       //float vector definition
-      T & cross(const T & a, const T & b){ x = a.y*b.z-a.z*b.y;
+      V3 & cross(const V3 & a, const V3 & b){ x = a.y*b.z-a.z*b.y;
                                            y = a.z*b.x-a.x*b.z;
 					   z = a.x*b.y-a.y*b.x;
                                            return *this;};  
@@ -70,6 +70,10 @@ Basic misc definitions
     V3f unit;  //integer (1,1,1)
   };
 
+  void inspect(const V3f & in);
+
+
+  
 #endif
 
 

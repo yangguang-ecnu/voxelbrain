@@ -129,13 +129,19 @@ struct main_module {
 	
 	//structure 
 	float rotx, roty, mousex, mousey; //rel coords
-	bool do_erosion, do_erosion_level, selection_run; //select if we want undo or propagation
+	bool do_erosion, do_zoom, do_erosion_level, selection_run; //select if we want undo or propagation
 
 	bool shift_pressed;
 	
 	V3f point;
 	V3i i_point;
 
+	struct view_t{
+		V3f center;
+		V3f eye;
+		V3f up;
+	} view;
+	
 	int band[2];
 	int coord_updated, band_focus, sparse;
 
@@ -201,8 +207,6 @@ struct main_module {
 	//axes
 	float count;
 	
-	
-	//MSVC SUCKS!!! Cannot put this inside a function.
 	struct psortable: public Point{
 	  V3f dir;
 	  psortable(V3f _dir):dir(_dir){};
@@ -225,6 +229,8 @@ struct main_module {
 	V3i locate_voxel(); //finds voxel at current mouse position (by scanning)
 	int start(int argc, char ** argv);
 	int setup_screen();
+	void setup_projection();
+	void recenter_camera();
 	void ajust_band();
 	
 	void predefined_shape_axes();
@@ -237,6 +243,11 @@ struct main_module {
 	void sort_points();
 	
 	void dump_test_data();
+	
+	void move(view_t &, float x, float y); //update view;
+	V3f side(view_t &); // calculate X axis
+	void normalize(view_t &); //make sure UP is perpendicular to line of sight
+	void inspect(const view_t &);
 };
 
 #endif // __main_h__

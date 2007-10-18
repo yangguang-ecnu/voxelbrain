@@ -14,8 +14,8 @@
 		threshold = 0.9f;
 		max_val = -100.0f;
 
-		zoom = 0.5f;
-		POINTSIZE=3.5;
+		zoom = 0.2f;
+		POINTSIZE=1;
 
 		do_band = false;
 		selection_run=false;
@@ -40,12 +40,13 @@
 		count = 0;
 
 		//structure 
-		rotx = 0.0f;
-		roty = 0.0f;
+		//rotx = 0.0f;
+		//roty = 0.0f;
 		mousex = 0.0f;
 		mousey = 0.0f;
 
 		do_erosion=false;
+		do_zoom=false;
 		do_erosion_level=0; //select if we want undo or propagation
 
 		band[0]=0;
@@ -56,6 +57,10 @@
 		background_color = 0;
 		
 		//lastZ = 0;
+		
+		view.center = V3f(0.0f, 0.0f, 0.0f);
+		view.eye = V3f(0.0f, 0.0f, -5.0f);
+		view.up = V3f(0.0f, 1.0f, 0.0f);
 
 	};
 
@@ -144,6 +149,14 @@ void main_module::predefined_shape_sphere(){
 }
 
 
+void main_module::setup_projection(){
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho( -3.0*width/height*zoom, 3.0*width/height*zoom, -3.0*zoom,
+			3.0*zoom, -20.0, 20.0);
+	
+
+}
 
 int main_module::setup_screen() {
 	printf("Trying to resize... %dx%d \n", width, height);
@@ -156,15 +169,20 @@ int main_module::setup_screen() {
 
 	//SDL_WM_SetCaption("Brain Voxel", NULL);
 	/* ----- OpenGL init --------------- */
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho( -3.0*width/height*zoom, 3.0*width/height*zoom, -3.0*zoom,
-			3.0*zoom, -20.0, 20.0);
+	setup_projection();
+	
 	glMatrixMode(GL_MODELVIEW);
+	gluLookAt(view.eye.x, view.eye.y, view.eye.z,
+			  view.center.x, view.center.y, view.center.z,
+			  view.up.x, view.up.y, view.up.z);
 	glLoadIdentity();
+
+
 	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	//  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
+	
+	
+	
 	glEnable(GL_POINT_SMOOTH);
 	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 	glPointSize(POINTSIZE*(float)width/(float)850/zoom);
@@ -188,13 +206,18 @@ int main_module::setup_screen() {
 
 void main_module::begin_frame(){
 	/* ----- Blitting on the screen --------------- */
+	setup_projection();
+	glMatrixMode(GL_MODELVIEW);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPointSize(POINTSIZE*(float)width/(float)850/zoom);
 	glLoadIdentity();
-	glScalef(4.0f, 4.0f, 4.0f);
-	glTranslatef(0.0f, 0.0f, -3.0f);
-	glRotatef(rotx / 2.0, 0.0f, 1.0f, 0.0f);
-	glRotatef(roty / 2.0, 1.0f, 0.0f, 0.0f);
+	gluLookAt(view.eye.x, view.eye.y, view.eye.z,
+			  view.center.x, view.center.y, view.center.z,
+			  view.up.x, view.up.y, view.up.z);
+//	glScalef(4.0f, 4.0f, 4.0f);
+//	glTranslatef(0.0f, 0.0f, -3.0f);
+	//glRotatef(rotx / 2.0, 0.0f, 1.0f, 0.0f);
+	//glRotatef(roty / 2.0, 1.0f, 0.0f, 0.0f);
 
 
 	glDisable (GL_BLEND);
@@ -215,6 +238,17 @@ void main_module::render_selection(){
 	}
 	glEnd();
 }
+
+void main_module::recenter_camera(){
+	V3f pos; V3f average = V3f(0.0f, 0.0f, 0.0f); int n = 0;
+	for (point_list::iterator i = propagator.active.begin(); i
+			!=propagator.active.end(); i++) {
+		grid.flip(pos, key(*i));
+		average+= pos; n++;
+	}
+	if(n!=0)average/=n;
+	view.center=average;
+};
 
 void main_module::sort_points(){
 	points_to_sort.clear();
@@ -303,10 +337,26 @@ void main_module::crossection_plane(const V3i & dx, const V3i & dy, int  xpos, i
 	int * buf;
 	buf = new int[xrayBufLength*4+1];
 	
+	
+	
 	V3i cur_coords;
 	V3i cur_pnt;
 	grid.flip(cur_coords, point);
-	
+
+	//finding max:
+	int slice_max = 0;
+	for (int ix = 0; ix < xraySize; ix++)
+		for (int iy = 0; iy < xraySize; iy++) {
+			V3i cur = dx * ((ix - xraySize/2)/3)+dy * ((iy - xraySize/2)/3) + cur_coords;
+			if (( (cur.x < vol.dim[0]) && (cur.x > 0)) && // check bounds
+				( (cur.y < vol.dim[1]) && (cur.y > 0))&&
+				( (cur.z < vol.dim[2]) && (cur.z > 0))) 
+				    if(vol(cur)>slice_max)slice_max=vol(cur);
+		};
+
+	if(slice_max==0)slice_max=1; //to avoid /0
+		
+		//main loop
 	for (int ix = 0; ix < xraySize; ix++)
 		for (int iy = 0; iy < xraySize; iy++) {
 			if ((ix < 2) || (ix >= (xraySize - 2))|| (iy < 2)|| (iy
@@ -319,7 +369,8 @@ void main_module::crossection_plane(const V3i & dx, const V3i & dy, int  xpos, i
 			if (( (cur.x < vol.dim[0]) && (cur.x > 0)) && // check bounds
 					( (cur.y < vol.dim[1]) && (cur.y > 0))&&( (cur.z
 					< vol.dim[2]) && (cur.z > 0))) {
-				int cvol = 255*(int)vol(cur)/vol.max;
+				//				int cvol = 255*(int)vol(cur)/vol.max;
+								int cvol = 180*(int)vol(cur)/slice_max;
 				if (cvol <= 0) {
 					buf[(iy*xraySize+ix)]= section_border ? 255 << (color * 8)
 							: background_color;
@@ -340,7 +391,7 @@ void main_module::crossection_plane(const V3i & dx, const V3i & dy, int  xpos, i
 				buf[(iy*xraySize+ix)]=~buf[(iy*xraySize+ix)];
 			//hit
 			if (!(hide_selection) && propagator.active.find(key(cur)) != propagator.active.end()) { //we hit current selection
-				buf[(iy*xraySize+ix)]= 255 << 8;
+				buf[(iy*xraySize+ix)] |= (255 << 8);
 			};
 
 		}
@@ -600,6 +651,45 @@ size_t find_points_predicate(raw_volume & vol, Predicate & fits, point_space & p
 	  pts.insert(pair<unsigned int, Point>(key(cur), calculate_point(vol, cur)));
   return pts.size();
 };
+
+/* View */
+
+V3f main_module::side(view_t & in){
+	V3f diff(in.center-in.eye);
+	printf("Diff:"); ::inspect(diff);
+	V3f s; s.cross(diff,in.up);
+	printf("Side, crossed:"); ::inspect(s);	
+	s /= s.length();
+	printf("Side, normaized:"); ::inspect(s);	
+	return s;
+}
+
+void main_module::normalize(view_t & in){
+	in.up.cross(side(in), in.center-in.eye);
+	in.up /= in.up.length();
+	V3f sight = (in.center-in.eye);
+	sight /= sight.length();
+	in.eye = in.center-sight;
+}
+
+void main_module::move(view_t & in, float x, float y){
+	inspect(in);
+	printf("Moving\n");
+	in.eye += side(in)*x+in.up*y;
+	printf("Moved\n");
+	inspect(in);
+	printf("Normaizing\n");
+	normalize(in);
+	inspect(in);
+}
+
+
+void main_module::inspect(const view_t & in){
+	printf("Eye:"); ::inspect(in.eye);
+	printf("Center:");::inspect(in.center);
+	printf("Up:");::inspect(in.up);
+}
+
 
 /* Calculate frame interval and print FPS each 5s */
 int FrameTiming(void) {
