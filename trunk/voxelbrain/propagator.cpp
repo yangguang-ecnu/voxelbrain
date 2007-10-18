@@ -4,7 +4,7 @@
 
 using namespace std;
 
-#define ABS(A) (((A)>0)?(A):-(A))
+//#define ABS(A) (((A)>0)?(A):-(A))
 
 
 void propagator_t::plan(const raw_volume & vol){

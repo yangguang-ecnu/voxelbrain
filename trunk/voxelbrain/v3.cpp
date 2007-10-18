@@ -1,5 +1,5 @@
 #include "v3.h"
-
+#include "stdio.h"
 
 V3i & Vtr::flip(V3i & out, const V3f & in){
   V3f rel(in-zero);
@@ -12,3 +12,6 @@ V3f & Vtr::flip(V3f & out, const V3i & in){
   return out;
 };
 
+void inspect(const V3f & in){
+  	printf("(%f, %f, %f)\n", in.x, in.y, in.z);
+};

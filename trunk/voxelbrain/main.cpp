@@ -94,16 +94,23 @@ int main_module::start(int argc, char **argv) {
 					if (event.motion.yrel < 0) {
 						propagator.undo_step();
 					} else {
-						propagator.plan(vol);
-						propagator.act(vol);
+						for(int i = event.motion.yrel; i > 0; i--){
+						   propagator.plan(vol);
+						   propagator.act(vol);
+						};
 					};
 					break;
 				}
 				coord_updated = true;
+				if(do_zoom)zoom*=1.0f+0.01f*event.motion.yrel;
 				if (!shift_pressed && editing_mode != SEEDS_ADD && event.motion.state
 						& SDL_BUTTON(1)) { //update rotation of the brain
-					rotx+=event.motion.xrel;
-					roty+=event.motion.yrel;
+					//rotx+=event.motion.xrel;
+				//	roty+=event.motion.yrel;
+					move(view, -0.03*event.motion.xrel, 0.03*event.motion.yrel);
+					//view.eye.x+=0.01+event.motion.xrel;
+					//view.eye.y+=0.01+event.motion.yrel;
+					inspect(view);
 				}
 				;
 				mousex = event.motion.x;
@@ -130,6 +137,7 @@ int main_module::start(int argc, char **argv) {
 			case SDL_KEYUP:
 				switch (event.key.keysym.sym) {
 				case SDLK_LALT: do_erosion = false; break;
+				case SDLK_RALT:do_zoom=false;break;
 				case SDLK_LSHIFT: shift_pressed = false; break;
 				case SDLK_LCTRL: editing_mode = SEEDS_NOP;break;
 				case SDLK_g:hide_selection = false;break;
@@ -145,6 +153,7 @@ int main_module::start(int argc, char **argv) {
 				switch (event.key.keysym.sym) {
 				case SDLK_LSHIFT: shift_pressed = true; break;
 				case SDLK_LALT:do_erosion=true;break;
+				case SDLK_RALT:do_zoom=true;break;
 				case SDLK_g:hide_selection=true;break;
 				case SDLK_c:use_colors=!use_colors;break;
 				case SDLK_r:selection_run=true;break;
@@ -170,6 +179,7 @@ int main_module::start(int argc, char **argv) {
 				case SDLK_s:vol.write_nifti_file(volenv.output_header.c_str(),volenv.output_data.c_str());break;
 				case SDLK_ESCAPE:
 				case SDLK_q: quit = 1;break;
+				case SDLK_F3: recenter_camera(); break;
 				case SDLK_d:dump_test_data();break;
 				case SDLK_PAGEUP:zoom*=1.1;break;
 				case SDLK_PAGEDOWN:zoom*=0.9;break;
@@ -193,8 +203,8 @@ int main_module::start(int argc, char **argv) {
 
 		if(selection_run){
 			if(!shift_pressed){
-			propagator.plan(vol);
-			propagator.act(vol);
+			  propagator.plan(vol);
+			  propagator.act(vol);
 			}else{
 				propagator.undo_step();
 			}
