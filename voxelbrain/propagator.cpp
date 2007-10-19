@@ -70,11 +70,12 @@ float propagator_t::eval(const step & s, const raw_volume & vol){
 	
 	
 	
-void propagator_t::act(const raw_volume & vol){  //apply the selected steps; //do not alter anything
-  if(proposed.size() < 1)return; //nothing to do
+float propagator_t::act(const raw_volume & vol){  //apply the selected steps; //do not alter anything
+  if(proposed.size() < 1)return -1; //nothing to do
   sort(proposed.begin(), proposed.end());
 
-  for(int i = 0; i < (proposed.size()/100+1); i++){
+  int i;
+  for(i = 0; i < (proposed.size()/7+1); i++){
     step cur(proposed[i]);
     V3i dest(cur.start+cur.to);
     undo_selection.add_point(key(dest));
@@ -82,9 +83,12 @@ void propagator_t::act(const raw_volume & vol){  //apply the selected steps; //d
  //   border.insert(key(dest));
     poi = dest; //set point of interest
   };
+  step last = proposed[i];
+  printf("Edge probability: %f\n", last.P);
   undo_selection.save();
  // update_border(border, active);
  // printf("border size: %d; totl size %d;\n", border.size(), active.size());
+  return(last.P);
 };
 
 void propagator_t::undo_step(){

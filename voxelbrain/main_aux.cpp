@@ -5,11 +5,16 @@
 		do_erode = false;
 		shift_pressed = false;
 		
+		dx = 0.0f;
+		dy = 0.0f;
+		
 		info = NULL;
 		width = 600;
 		height = 600;
 		bpp = 0;
 		flags = 0;
+		
+		propagation_threshold =0.7;
 
 		threshold = 0.9f;
 		max_val = -100.0f;
@@ -116,6 +121,7 @@ void main_module::ajust_band(){
 }
 
 void main_module::apply_modification(){
+	propagation_threshold = 0.7;
     application_times = 1;
     for(point_list::iterator i = propagator.active.begin(); i!=propagator.active.end(); i++){
 	    V3i cur(key(*i)); if(vol(cur)>0)vol.set(cur,-vol(cur)); //actually deleting
@@ -656,11 +662,11 @@ size_t find_points_predicate(raw_volume & vol, Predicate & fits, point_space & p
 
 V3f main_module::side(view_t & in){
 	V3f diff(in.center-in.eye);
-	printf("Diff:"); ::inspect(diff);
+	//printf("Diff:"); ::inspect(diff);
 	V3f s; s.cross(diff,in.up);
-	printf("Side, crossed:"); ::inspect(s);	
+	//printf("Side, crossed:"); ::inspect(s);	
 	s /= s.length();
-	printf("Side, normaized:"); ::inspect(s);	
+	//printf("Side, normaized:"); ::inspect(s);	
 	return s;
 }
 
@@ -673,14 +679,14 @@ void main_module::normalize(view_t & in){
 }
 
 void main_module::move(view_t & in, float x, float y){
-	inspect(in);
-	printf("Moving\n");
+	//inspect(in);
+	//printf("Moving\n");
 	in.eye += side(in)*x+in.up*y;
-	printf("Moved\n");
-	inspect(in);
-	printf("Normaizing\n");
+	//printf("Moved\n");
+	//inspect(in);
+	//printf("Normaizing\n");
 	normalize(in);
-	inspect(in);
+	//inspect(in);
 }
 
 
