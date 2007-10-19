@@ -84,7 +84,7 @@ float propagator_t::act(const raw_volume & vol){  //apply the selected steps; //
     poi = dest; //set point of interest
   };
   step last = proposed[i];
-  printf("Edge probability: %f\n", last.P);
+  //printf("Edge probability: %f\n", last.P);
   undo_selection.save();
  // update_border(border, active);
  // printf("border size: %d; totl size %d;\n", border.size(), active.size());

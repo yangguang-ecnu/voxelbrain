@@ -34,9 +34,9 @@ int main_module::start(int argc, char **argv) {
 	int was = SDL_GetTicks();
 	//  printf("%d points found ", find_points(vol, allPoints));
 	TestPredicate my_test(vol);
-	printf("%d points found ", find_points_predicate(vol, my_test,
+	//printf("%d points found ", find_points_predicate(vol, my_test,
 			sets.allPoints));
-	printf("in %f seconds.\n", (float)(SDL_GetTicks()-was)/1000.0);
+	//printf("in %f seconds.\n", (float)(SDL_GetTicks()-was)/1000.0);
 
 	u = V3f(1.0f/(float)vol.dim[0], 1.0f/(float)vol.dim[0], 1.0f
 			/(float)vol.dim[0]);
@@ -68,7 +68,7 @@ int main_module::start(int argc, char **argv) {
 			int killed = erode_band(vol, sets.allPoints,
 					sets.allPointsSelected, sets.allPointsToKill, (int)band[0],
 					(int)band[1]);
-			printf("Eroded %d points.\n", killed);
+			//printf("Eroded %d points.\n", killed);
 			if (killed == 0)
 				do_erode = false;
 		};
@@ -125,9 +125,9 @@ int main_module::start(int argc, char **argv) {
 					catch_cursor(V3i(0,1,0), V3i(0,0,-1), 10+100, 10+2*210+100, 100);
 				};
 				if (event.motion.state & SDL_BUTTON(4))
-					printf("Wheel up\n");
+					//printf("Wheel up\n");
 				if (event.motion.state & SDL_BUTTON(5))
-					printf("Wheel down\n");
+					//printf("Wheel down\n");
 
 
 				break;
@@ -299,7 +299,7 @@ int main_module::start(int argc, char **argv) {
 					}; //if in
 				}; //altering sign
 			};
-			printf("Cannot locate volume...\n");
+			//printf("Cannot locate volume...\n");
 			found: if (SEEDS_ADD==editing_mode) {
 				//select_point();
 				if (update_band_interactively) {
