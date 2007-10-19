@@ -79,7 +79,7 @@ void main_module::select_point() {
 void main_module::recalculate_points(){
 	  sets.allPoints.clear();
 	  sets.allPointsToKill.clear();
-	  printf("%d points found ", find_points(vol, sets.allPoints));
+	  //printf("%d points found ", find_points(vol, sets.allPoints));
 }
 
 void main_module::perform_undo(){
@@ -128,11 +128,11 @@ void main_module::apply_modification(){
       hard_undo.add_point(*i); //adding to undo
 	  };
 	  hard_undo.save();
-	  printf("Saved undo information.\n");
+	  //printf("Saved undo information.\n");
 	  propagator.active.clear();
 //	  propagator.border.clear();
 	  sets.allPoints.clear();
-	  printf("%d points found.", find_points(vol, sets.allPoints));
+	  //printf("%d points found.", find_points(vol, sets.allPoints));
 	  printf("Done.\n");
 }
 
@@ -266,7 +266,7 @@ void main_module::sort_points(){
 	sort(points_to_sort.begin(), points_to_sort.end(),
 			psortable(GetOGLDirection()));
 	
-	printf("Sorted %d points\n", points_to_sort.size());
+//	printf("Sorted %d points\n", points_to_sort.size());
 }
 
 void main_module::render_points(){
