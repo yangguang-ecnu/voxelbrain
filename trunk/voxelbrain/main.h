@@ -131,6 +131,10 @@ struct main_module {
 	float rotx, roty, mousex, mousey; //rel coords
 	bool do_erosion, do_zoom, do_erosion_level, selection_run; //select if we want undo or propagation
 
+	float dx, dy;
+	
+	float propagation_threshold;
+	
 	bool shift_pressed;
 	
 	V3f point;

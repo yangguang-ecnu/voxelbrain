@@ -41,7 +41,7 @@ struct propagator_t {
 
   void set_band(const raw_volume & vol);
   void plan(const raw_volume & vol); //fill in proposed steps
-  void act(const raw_volume & vol);  //apply the selected steps; //do not alter anything
+  float act(const raw_volume & vol);  //apply the selected steps; //do not alter anything
   float eval(const step &, const raw_volume & vol);
   void undo_step();// undo last step
   };

@@ -107,10 +107,11 @@ int main_module::start(int argc, char **argv) {
 						& SDL_BUTTON(1)) { //update rotation of the brain
 					//rotx+=event.motion.xrel;
 				//	roty+=event.motion.yrel;
-					move(view, -0.03*event.motion.xrel, 0.03*event.motion.yrel);
+					dx = dx+(-0.03*event.motion.xrel)/2;
+					dy = (dy+0.03*event.motion.yrel)/2;
 					//view.eye.x+=0.01+event.motion.xrel;
 					//view.eye.y+=0.01+event.motion.yrel;
-					inspect(view);
+					//inspect(view);
 				}
 				;
 				mousex = event.motion.x;
@@ -200,11 +201,24 @@ int main_module::start(int argc, char **argv) {
 
 		//FPS counting
 		interval = FrameTiming();
-
+		
+		//if moving, move
+		if((ABS(dx) > 0.0001) && (ABS(dy) > 0.0001) ){
+		  move(view, dx, dy);
+		  dx*=0.3; dy*=0.3;
+		};
+		
 		if(selection_run){
 			if(!shift_pressed){
+				float cur_threshold;
+				for(int tries = 0; tries < 10; tries++){
 			  propagator.plan(vol);
-			  propagator.act(vol);
+			  cur_threshold = propagator.act(vol);
+			  if(cur_threshold < 0)break;
+		      if(cur_threshold < propagation_threshold){
+		    	  propagation_threshold = cur_threshold; break;
+		      }
+				};//
 			}else{
 				propagator.undo_step();
 			}
