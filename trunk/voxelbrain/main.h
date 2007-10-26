@@ -138,6 +138,7 @@ struct main_module {
 	bool shift_pressed;
 	
 	V3f point;
+	V3f cross_point;
 	V3i i_point;
 
 	struct view_t{

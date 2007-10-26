@@ -34,7 +34,7 @@ int main_module::start(int argc, char **argv) {
 	int was = SDL_GetTicks();
 	//  printf("%d points found ", find_points(vol, allPoints));
 	TestPredicate my_test(vol);
-	//printf("%d points found ", find_points_predicate(vol, my_test,
+	printf("%d points found ", find_points_predicate(vol, my_test,
 			sets.allPoints));
 	//printf("in %f seconds.\n", (float)(SDL_GetTicks()-was)/1000.0);
 
@@ -203,10 +203,10 @@ int main_module::start(int argc, char **argv) {
 		interval = FrameTiming();
 		
 		//if moving, move
-		if((ABS(dx) > 0.0001) && (ABS(dy) > 0.0001) ){
-		  move(view, dx, dy);
+		//if((ABS(dx) > 0.0001) && (ABS(dy) > 0.0001) ){
+		  if(!do_zoom)move(view, dx, dy);
 		  dx*=0.3; dy*=0.3;
-		};
+		//};
 		
 		if(selection_run){
 			if(!shift_pressed){
@@ -279,7 +279,8 @@ int main_module::start(int argc, char **argv) {
 		//print x,y,z
 		V3f dir = GetOGLDirection();
 		dir/=dir.length();
-
+		bool not_found = true;
+		
 		if (coord_updated && !shift_pressed) {
 			for (int i = 0; i<100; i++) {
 				for (int sgn = -1; sgn <= 1; sgn+=2) {
@@ -294,13 +295,18 @@ int main_module::start(int argc, char **argv) {
 							//printf("f(%d,%d,%d)=%f\n", iv.x, iv.y, iv.z, vol(iv.x, iv.y, iv.z)); //here is what we've got
 							grid.flip(point, V3i(iv.x, iv.y, iv.z)); // actual point
 							i_point = iv;
+							not_found = false;
 							goto found;
+							
 						};
 					}; //if in
 				}; //altering sign
 			};
 			//printf("Cannot locate volume...\n");
-			found: if (SEEDS_ADD==editing_mode) {
+			found:
+			    
+			    if(!not_found)cross_point = point;
+				if (SEEDS_ADD==editing_mode) {
 				//select_point();
 				if (update_band_interactively) {
 					if (sets.allPointsSelected.size()==1) { //ok, we are starting a new selection
