@@ -1,5 +1,5 @@
 import os
-os.system('./rev_gen.sh') #generate version number
+os.system('bash ./rev_gen.sh') #generate version number
 env = Environment()
 conf = Configure(env)
 ALL_LIBS=["SDL","SDLmain"]
