@@ -5,6 +5,8 @@
 		do_erode = false;
 		shift_pressed = false;
 		
+		cross_point = V3f(0.0f,0.0f,0.0f);
+		
 		dx = 0.0f;
 		dy = 0.0f;
 		
@@ -79,7 +81,7 @@ void main_module::select_point() {
 void main_module::recalculate_points(){
 	  sets.allPoints.clear();
 	  sets.allPointsToKill.clear();
-	  //printf("%d points found ", find_points(vol, sets.allPoints));
+	  printf("%d points found ", find_points(vol, sets.allPoints));
 }
 
 void main_module::perform_undo(){
@@ -132,7 +134,7 @@ void main_module::apply_modification(){
 	  propagator.active.clear();
 //	  propagator.border.clear();
 	  sets.allPoints.clear();
-	  //printf("%d points found.", find_points(vol, sets.allPoints));
+	  printf("%d points found.", find_points(vol, sets.allPoints));
 	  printf("Done.\n");
 }
 
@@ -347,7 +349,7 @@ void main_module::crossection_plane(const V3i & dx, const V3i & dy, int  xpos, i
 	
 	V3i cur_coords;
 	V3i cur_pnt;
-	grid.flip(cur_coords, point);
+	grid.flip(cur_coords, cross_point);
 
 	//finding max:
 	int slice_max = 0;
