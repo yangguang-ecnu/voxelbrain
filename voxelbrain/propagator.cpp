@@ -58,6 +58,14 @@ float propagator_t::eval(const step & s, const raw_volume & vol){
   //taking into account band (so that we don't shift gradually to unwanted densities)
   float in_band = smooth_bell((vol(dest)-band_center)/half_band_size);
   
+  // check friends:
+  int friends = 0;
+  for(int i =-1; i <=1; i++)
+  	  for(int j =-1; j <=1; j++)
+  		  for(int k =-1; k <=1; k++){
+  			  if(active.find(key(V3i(dest.x+i, dest.y+j, dest.z+k)))!=active.end())friends++;
+  };
+  
   //check if we can escape:
   for(int i = 1; i < 3; i++){
     V3i future_dest(s.to*i+s.start);
@@ -65,7 +73,7 @@ float propagator_t::eval(const step & s, const raw_volume & vol){
        (active.find(key(future_dest)) != active.end()))return 1.0f; //if we can reach out, go for it.
   };
 		
-  return (1.0f-delta/1000.0f)*in_band; //so far just delta
+  return (1.0f-delta/1000.0f)*in_band*(float)friends/27.0; //so far just delta
 }
 	
 	
@@ -74,13 +82,15 @@ float propagator_t::act(const raw_volume & vol){  //apply the selected steps; //
   if(proposed.size() < 1)return -1; //nothing to do
   sort(proposed.begin(), proposed.end());
 
+  fresh.clear();
+  
   int i;
   for(i = 0; i < (proposed.size()/7+1); i++){
     step cur(proposed[i]);
     V3i dest(cur.start+cur.to);
     undo_selection.add_point(key(dest));
     active.insert(key(dest));
- //   border.insert(key(dest));
+    fresh.insert(key(dest));
     poi = dest; //set point of interest
   };
   step last = proposed[i];

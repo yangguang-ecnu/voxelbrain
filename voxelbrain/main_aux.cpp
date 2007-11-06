@@ -235,9 +235,16 @@ void main_module::begin_frame(){
 void main_module::render_selection(){
 	glBegin(GL_POINTS);
 	V3f pos;
-	glColor3f(0.0, 1.0, 0.0);
 	for (point_list::iterator i = propagator.active.begin(); i
 			!=propagator.active.end(); i++) {
+		
+		//if it is newly hatched
+		if(propagator.fresh.find(*i)==propagator.fresh.end()){
+			glColor3f(0.0, 1.0, 0.0); //if not fresh
+		}else{
+			glColor3f(0.2, 1.0, 1.0); //if fresh
+		}
+
 		grid.flip(pos, key(*i));
 		if (!hide_selection ) {
 			//gen_sphere(pos, 0.008, 3);
