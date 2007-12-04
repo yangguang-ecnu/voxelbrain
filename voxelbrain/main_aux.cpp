@@ -22,7 +22,7 @@
 		max_val = -100.0f;
 
 		zoom = 0.2f;
-		POINTSIZE=1;
+		POINTSIZE=2;
 
 		do_band = false;
 		selection_run=false;
@@ -191,9 +191,10 @@ int main_module::setup_screen() {
 	
 	
 	
-	glEnable(GL_POINT_SMOOTH);
-	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-	glPointSize(POINTSIZE*(float)width/(float)850/zoom);
+	glDisable(GL_POINT_SMOOTH);
+	//glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+//	glPointSize(POINTSIZE*(float)width/(float)3650/zoom);
+	glPointSize(3.0);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_NORMALIZE);
 
@@ -217,7 +218,8 @@ void main_module::begin_frame(){
 	setup_projection();
 	glMatrixMode(GL_MODELVIEW);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glPointSize(POINTSIZE*(float)width/(float)850/zoom);
+//	glPointSize(POINTSIZE*(float)width/(float)3650/zoom);
+        glPointSize(3.0);
 	glLoadIdentity();
 	gluLookAt(view.eye.x, view.eye.y, view.eye.z,
 			  view.center.x, view.center.y, view.center.z,
