@@ -16,16 +16,27 @@ int main_module::start(int argc, char **argv) {
 		exit(-1);
 	}
 
+
+      
 	atexit(SDL_Quit);
 
-	if (!volenv.parse(argc, argv)) {
-		printf(volenv.err.c_str());
-		exit(1);
-	}
+        if(argc == 2){
+	  try{
+	  	  vol.load_mgh(argv[1]);
+	  }catch(const char * in){
+	    printf("Unable to load file: %s\n", in);
+	    return -1;
+	  };
+	}else{
 
+	 if (!volenv.parse(argc, argv)) {
+		 printf(volenv.err.c_str());
+		 exit(1);
+	 }
+	 vol.read_nifti_file(volenv.input_header.c_str(), volenv.input_data.c_str());
+	};
 	//array manipulation
 
-	vol.read_nifti_file(volenv.input_header.c_str(), volenv.input_data.c_str());
 	//vol.load(volenv.input_data.c_str());
 	//Array<float, 3> vol(load_data_float("bSS081a_1_3.img", TinyVector<int, 3> (vol_data.dim[0], vol_data.dim[1], vol_data.dim[2]) ));
 
@@ -178,6 +189,7 @@ int main_module::start(int argc, char **argv) {
 							sets.allPointsSelected, band[0], band[1]));
 					break;
 				case SDLK_s:vol.write_nifti_file(volenv.output_header.c_str(),volenv.output_data.c_str());break;
+				case SDLK_w:vol.save_mgh("result.mgh");break;
 				case SDLK_ESCAPE:
 				case SDLK_q: quit = 1;break;
 				case SDLK_F3: recenter_camera(); break;
@@ -256,7 +268,7 @@ int main_module::start(int argc, char **argv) {
 		if (only_points) {
 			glPointSize(1.0);
 		} else {
-			glPointSize(POINTSIZE*(float)width/(float)850/zoom);
+			glPointSize(POINTSIZE*(float)width/(float)2050/zoom);
 		};
 
 		render_points();
