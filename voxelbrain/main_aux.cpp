@@ -244,7 +244,7 @@ void main_module::render_selection(){
 		if(propagator.fresh.find(*i)==propagator.fresh.end()){
 			glColor3f(0.0, 1.0, 0.0); //if not fresh
 		}else{
-			glColor3f(0.2, 1.0, 1.0); //if fresh
+			glColor3f(1.0, 0.3, 0.3); //if fresh
 		}
 
 		grid.flip(pos, key(*i));
