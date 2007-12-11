@@ -2,32 +2,42 @@ import os
 os.system('bash ./rev_gen.sh') #generate version number
 env = Environment()
 conf = Configure(env)
-ALL_LIBS=["SDL","SDLmain"]
-ALL_LINKFLAGS=''
-ALL_CPPFLAGS=["-g", "-O3"]
-ALL_SOURCES=["glbase.cpp", "mgz_io.cpp", "main_aux.cpp", "v3.cpp", "v3sets.cpp", "volio.cpp", "nifti.cpp", "misc.cpp", "undo.cpp", "propagator.cpp"]
+env.ParseConfig('wx-config --cflags --libs')
+env.Append(LIBS=["SDL","SDLmain"], LINKFLAGS='-L "."', CPPFLAGS=["-g", "-O3"], CPPPATH=["sparsehash/src"])
+
+SOURCES=["glbase.cpp", "mgz_io.cpp", "main_aux.cpp", "v3.cpp", "v3sets.cpp", "volio.cpp", "nifti.cpp", "misc.cpp", "undo.cpp", "propagator.cpp"]
 
 #checking libs:
 if conf.CheckLib('GL'): 
-	ALL_LIBS += ['GL']
+	env.Append(LIBS = ['GL'])
 elif conf.CheckLib('opengl32'):
-	ALL_LIBS += ['opengl32']
+	env.Append(LIBS = ['opengl32'])
 else:
 	print "Opengl library needed..."
 	#exit(1)
 
 if conf.CheckLib('GLU'):
-	ALL_LIBS += ['GLU']
+	env.Append(LIBS = ['GLU'])
 elif conf.CheckLib('glu32'):
-	ALL_LIBS += ['glu32']
+	env.Append(LIBS = ['glu32'])
 else:
 	print "Glu library needed...assuming MacOsX"
-	ALL_LINKFLAGS='-framework OpenGL -framework Foundation -framework AppKit'
-	ALL_CPPFLAGS+=["-DMACOSX"]
+	env.Append(LINKFLAGS='-framework OpenGL -framework Foundation -framework AppKit')
+	env.Append(CPPFLAGS=["-DMACOSX"])
 	#exit(1)
 
 env = conf.Finish()
 
-env.Program("voxbr", ["main.cpp"]+ALL_SOURCES , CPPPATH=["sparsehash/src"], CPPFLAGS=ALL_CPPFLAGS, LINKFLAGS=ALL_LINKFLAGS, LIBS=ALL_LIBS)
-env.Program("test", ["test.cpp"]+ALL_SOURCES, CPPPATH=["sparsehash/src"], CPPFLAGS=ALL_CPPFLAGS, LINKFLAGS=ALL_LINKFLAGS, LIBS=ALL_LIBS)
+env_prog = env.Clone();
+env_prog.Append(LIBS=["voxbr"], LIBPATH=".")
+
+
+env.Library("voxbr", SOURCES)
+env_prog.Program("voxbr", ["main.cpp"])
+env_prog.Program("wxvoxbr", ["wxmain.cpp"])
+#env.Program("test", ["test.cpp"], LIBS=["voxbr"])
 #env.Program("mgz_io_test", ["test_mgz_io.cpp", "mgz_io.cpp"])
+
+
+
+
