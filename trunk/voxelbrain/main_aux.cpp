@@ -1,4 +1,4 @@
-#include "main.h"
+#include "wxmain.h"
 
 	main_module::main_module() {
 		ill.setup(2, 0.2);
@@ -168,10 +168,12 @@ void main_module::setup_projection(){
 
 int main_module::setup_screen() {
 	printf("Trying to resize... %dx%d \n", width, height);
+	#if HAS_SDL
 	if ((screen = SDL_SetVideoMode(width, height, bpp, flags)) == 0) {
-		//  fprintf(stderr, "Video mode set failed: %s\n", SDL_GetError());
+		  fprintf(stderr, "Video mode set failed: %s\n", SDL_GetError());
 		exit(-1);
-	}
+		}
+        #endif
 
 	glViewport(0, 0, width, height);
 
@@ -212,6 +214,56 @@ int main_module::setup_screen() {
 	glEnable(GL_COLOR_MATERIAL);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 }
+
+
+int main_module::wx_setup_screen() {
+	printf("Trying to resize... %dx%d \n", width, height);
+	//	if ((screen = SDL_SetVideoMode(width, height, bpp, flags)) == 0) {
+		//  fprintf(stderr, "Video mode set failed: %s\n", SDL_GetError());
+	//		exit(-1);
+	//	}
+
+	glViewport(0, 0, width, height);
+
+	//SDL_WM_SetCaption("Brain Voxel", NULL);
+	/* ----- OpenGL init --------------- */
+	setup_projection();
+	
+	glMatrixMode(GL_MODELVIEW);
+	gluLookAt(view.eye.x, view.eye.y, view.eye.z,
+			  view.center.x, view.center.y, view.center.z,
+			  view.up.x, view.up.y, view.up.z);
+	glLoadIdentity();
+
+
+	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+	//  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	
+	
+	
+	glDisable(GL_POINT_SMOOTH);
+	//glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+//	glPointSize(POINTSIZE*(float)width/(float)3650/zoom);
+	glPointSize(3.0);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_NORMALIZE);
+
+	/* ------Lighting -------*/
+
+	if (!disable_lighting)
+		glEnable(GL_LIGHTING);
+	glEnable(GL_NORMALIZE);
+    GLfloat specular[] = {0.1, 0.1, 0.1, 0.1};
+	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+    GLfloat global_ambient[] = { 0.1f, 0.1f, 0.1f, 0.1f };
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
+	glShadeModel(GL_SMOOTH);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+};
+
+
 
 void main_module::begin_frame(){
 	/* ----- Blitting on the screen --------------- */
@@ -713,7 +765,7 @@ int FrameTiming(void) {
 	Uint32 interval;
 	static Uint32 current, last = 0, five = 0, nframes = 0;
 
-	current = SDL_GetTicks();
+	//current = SDL_GetTicks();
 	nframes++;
 
 	if (current - five > 5*1000) {

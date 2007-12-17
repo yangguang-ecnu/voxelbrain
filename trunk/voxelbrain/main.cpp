@@ -18,6 +18,7 @@ int main_module::start(int argc, char **argv) {
       
 	atexit(SDL_Quit);
 
+	//LOADING
         if(argc == 2){
 	  try{
 	  	  vol.load_mgh(argv[1]);

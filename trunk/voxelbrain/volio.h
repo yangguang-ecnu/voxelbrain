@@ -24,6 +24,7 @@ struct raw_volume{
   int write_nifti_file(const char * hdr_file, const char * data_file);
 
   void load_mgh(char * name);
+  void load_mgh_data();
   void save_mgh(char * name);
   
   void load(const string file_name);

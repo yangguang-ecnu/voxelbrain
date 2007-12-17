@@ -21,6 +21,26 @@ void raw_volume::load_mgh(char * name){
   dim[2] = vol.depth;
 };
 
+// parses the string taken from m_volume
+void raw_volume::load_mgh_data(){
+  parse(m_data, vol, true);
+  
+  data = new short int [vol.size];
+  max = -1000.0;
+  min = 1000.0;
+  for(int i = 0; i < vol.size;i++){
+    if(vol.data[i] > max)max = vol.data[i];
+    if(vol.data[i] < min)min = vol.data[i];
+    data[i] = vol.data[i];
+  };
+
+  dim[0] = vol.width;
+  dim[1] = vol.height;
+  dim[2] = vol.depth;
+  printf("Volume successfully loaded: (%d:%d:%d)\n", 
+	 dim[0], dim[1], dim[2]);
+};
+
 void raw_volume::save_mgh(char * name){
   for(int i = 0; i < vol.size;i++){
     vol.data[i] = data[i];

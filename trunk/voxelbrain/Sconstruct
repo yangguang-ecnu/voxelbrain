@@ -2,11 +2,12 @@ import os
 os.system('bash ./rev_gen.sh') #generate version number
 env = Environment()
 conf = Configure(env)
+
 env.ParseConfig('wx-config --cflags --libs')
 env.Append(LIBS=["SDL","SDLmain"], LINKFLAGS='-L "."', CPPFLAGS=["-g", "-O3"], CPPPATH=["sparsehash/src"])
 
 SOURCES=["glbase.cpp", "mgz_io.cpp", "main_aux.cpp", "v3.cpp", "v3sets.cpp", "volio.cpp", "nifti.cpp", "misc.cpp", "undo.cpp", "propagator.cpp"]
-
+env.Append(CPPFLAGS=["-DHAS_SDL"])
 #checking libs:
 if conf.CheckLib('GL'): 
 	env.Append(LIBS = ['GL'])
@@ -34,7 +35,7 @@ env_prog.Append(LIBS=["voxbr"], LIBPATH=".")
 
 env.Library("voxbr", SOURCES)
 env_prog.Program("voxbr", ["main.cpp"])
-env_prog.Program("wxvoxbr", ["wxmain.cpp"])
+#env_prog.Program("wxvoxbr", ["wxmain.cpp"])
 #env.Program("test", ["test.cpp"], LIBS=["voxbr"])
 #env.Program("mgz_io_test", ["test_mgz_io.cpp", "mgz_io.cpp"])
 
