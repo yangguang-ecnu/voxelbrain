@@ -1,0 +1,48 @@
+import os
+os.system('bash ./rev_gen.sh') #generate version number
+os.system('etags -e *.cpp *.h')
+env = Environment()
+#conf = Configure(env)
+env.ParseConfig('wx-config --cflags --libs std')
+env.Append(LIBS=["wx_gtk2u_ogl-2.8", "wx_gtk2u_gl-2.8"])
+env.Append(LIBS=[], LINKFLAGS='-L "."', CPPFLAGS=["-g", "-O3"], CPPPATH=["sparsehash/src"])
+
+SOURCES=["glbase.cpp", "mgz_io.cpp", "main_aux.cpp", "v3.cpp", "v3sets.cpp", "volio.cpp", "nifti.cpp", "misc.cpp", "undo.cpp", "propagator.cpp"]
+
+#checking libs:
+#if conf.CheckLib('GL'): 
+#	env.Append(LIBS = ['GL'])
+#elif conf.CheckLib('opengl32'):
+#	env.Append(LIBS = ['opengl32'])
+#else:
+#	print "Opengl library needed..."
+#	#exit(1)
+
+#if conf.CheckLib('GLU'):
+#	env.Append(LIBS = ['GLU'])
+#elif conf.CheckLib('glu32'):
+#	env.Append(LIBS = ['glu32'])
+#else:
+#	print "Glu library needed...assuming MacOsX"
+#	env.Append(LINKFLAGS='-framework OpenGL -framework Foundation -framework AppKit')
+#	env.Append(CPPFLAGS=["-DMACOSX"])
+#	#exit(1)
+
+#env = conf.Finish()
+
+env_prog = env.Clone();
+env_prog.Append(LIBS=["voxbr"], LIBPATH=".")
+
+
+env.Library("voxbr", SOURCES)
+#env_prog.Program("voxbr", ["main.cpp"])
+env_prog.Program("wxvoxbr", ["wxmain.cpp", "wxgl.cpp"])
+#env.Program("test", ["test.cpp"], LIBS=["voxbr"])
+#env.Program("mgz_io_test", ["test_mgz_io.cpp", "mgz_io.cpp"])
+
+
+
+
+
+
+

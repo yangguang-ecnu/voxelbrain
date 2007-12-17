@@ -1,3 +1,5 @@
+(cannot make any sense of it...)
+
 TODO:
   modules (in order of proposed implementation):
     GL interface (pretty straightforward - accepts surface points, selection points, can optionally show crossections)
@@ -18,3 +20,7 @@ TODO:
                   ----
                   another test from eclipse/windows
     
+
+---16.12.2007
+make it easy to access documentation:
+(ok, use standard documentation place: /usr/share/doc/wx2.8-doc)
