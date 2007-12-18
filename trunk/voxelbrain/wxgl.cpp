@@ -16,6 +16,7 @@ EVT_ERASE_BACKGROUND(MainGLCanvas::OnEraseBackground)
 EVT_KEY_DOWN( MainGLCanvas::OnKeyDown )
 EVT_KEY_UP( MainGLCanvas::OnKeyUp )
 EVT_ENTER_WINDOW( MainGLCanvas::OnEnterWindow )
+EVT_MOTION( MainGLCanvas::OnMouseMove )
 END_EVENT_TABLE()
 
 unsigned long  MainGLCanvas::m_secbase = 0;
@@ -48,6 +49,61 @@ MainGLCanvas::~MainGLCanvas()
 {
 }
 
+void MainGLCanvas::OnMouseMove(wxMouseEvent& event){
+  printf("Trying to move mouse.\n");
+  mm->coord_updated = true;
+  mm->mousex = event.m_x;
+  mm->mousey = event.m_y;
+
+  Refresh();
+
+#if 0 // legacy code
+				if (do_erosion) { //propagate
+					if (event.motion.yrel < 0) {
+						propagator.undo_step();
+					} else {
+						for(int i = event.motion.yrel; i > 0; i--){
+						   propagator.plan(vol);
+						   propagator.act(vol);
+						};
+					};
+					break;
+				}
+				coord_updated = true;
+				if(do_zoom)zoom*=1.0f+0.01f*event.motion.yrel;
+				if (!shift_pressed && editing_mode != SEEDS_ADD && event.motion.state
+						& SDL_BUTTON(1)) { //update rotation of the brain
+					//rotx+=event.motion.xrel;
+				//	roty+=event.motion.yrel;
+				  dx = dx+(-0.03*event.motion.xrel)/2;
+				  dy = dy+(0.03*event.motion.yrel)/2;
+					//view.eye.x+=0.01+event.motion.xrel;
+					//view.eye.y+=0.01+event.motion.yrel;
+					//inspect(view);
+				}
+				;
+				mousex = event.motion.x;
+				mousey = event.motion.y;
+				
+				if (editing_mode == SEEDS_ADD && event.motion.state
+						& SDL_BUTTON(1)){
+					if(!shift_pressed)select_point();
+					catch_cursor(V3i(1,0,0), V3i(0,-1,0), 10+100, 10+100, 100);
+					catch_cursor(V3i(1,0,0), V3i(0,0,1), 10+100, 10+210+100, 100);
+					catch_cursor(V3i(0,1,0), V3i(0,0,-1), 10+100, 10+2*210+100, 100);
+				};
+				if (event.motion.state & SDL_BUTTON(4))
+					//printf("Wheel up\n");
+				if (event.motion.state & SDL_BUTTON(5))
+					//printf("Wheel down\n");
+
+
+				break;
+
+#endif //end legacy
+};
+
+
 void MainGLCanvas::Render()
 {
   if(!mm)return; //nothing to display yet.
@@ -73,7 +129,73 @@ void MainGLCanvas::Render()
   printf("Rendering points...\n");
   mm->render_points();
 
-#if 0
+  /**** detecting the point *****/
+  mm->point = GetOGLPos((int)mm->mousex, (int)mm->mousey);
+  V3f dir = GetOGLDirection();
+  dir/=dir.length();
+  bool not_found = true;
+  printf("point(%d,%d,%d);", mm->point.x, mm->point.y, mm->point.y); //here is what we've got
+  printf("direction(%d,%d,%d);", dir.x, dir.y, dir.z); //here is what we've got
+  
+  if (mm->coord_updated /*&& !mm->shift_pressed*/) {
+    for (int i = 0; i<100; i++) {
+      for (int sgn = -1; sgn <= 1; sgn+=2) {
+	V3f cur_v = mm->point+(dir*0.0001*i*sgn);
+	V3i iv;
+	mm->grid.flip(iv, cur_v);
+	if (iv.x>0 && iv.y>0 && iv.z>0 && 
+	    iv.x < mm->vol.dim[0] && 
+	    iv.y < mm->vol.dim[1] && 
+	    iv.z < mm->vol.dim[2]) //check that it is here.
+	  {
+	    if (mm->vol(iv.x, iv.y, iv.z)>1.0 && is_border(mm->vol, V3i(iv.x, iv.y, iv.z))) {
+	      printf("f(%d,%d,%d)=%f\n", iv.x, iv.y, iv.z, mm->vol(iv.x, iv.y, iv.z)); //here is what we've got
+	      mm->grid.flip(mm->point, V3i(iv.x, iv.y, iv.z)); // actual point
+	      mm->i_point = iv;
+	      not_found = false;
+	      goto found;
+							
+	    };
+	  }; //if in
+      }; //altering sign
+    };
+    //printf("Cannot locate volume...\n");
+  found:
+			    
+    if(!not_found)mm->cross_point = mm->point;
+    /*    if (SEEDS_ADD==mm->editing_mode) {
+      //select_point();
+      if ( update_band_interactively ) {
+	if (sets.allPointsSelected.size()==1) { //ok, we are starting a new selection
+	  band[0]=vol(i_point)-10;
+	  band[1]=vol(i_point)+10;
+	}
+	if (band[0]>vol(i_point))
+	  band[0]=vol(i_point);
+	if (band[1]<vol(i_point))
+	  band[1]=vol(i_point);
+      }
+    }*/
+    mm->coord_updated=false;
+    
+    glEnable(GL_LIGHTING);
+    // glDisable(GL_DEPTH_TEST);
+    glBegin(GL_QUADS);
+    glColor3f(1.0f, 0.4f, 0.0f);
+    gen_sphere(mm->point, 0.009, 3);
+    glEnd();
+    glEnable(GL_DEPTH_TEST);
+
+    printf("(%f, %f, %f)\n", mm->point.x,  mm->point.y,  mm->point.z);
+
+  };
+
+  /*** render cursor now ***/
+
+
+  /************ end point detection ********/
+
+#if 0 ///Legacy code
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glFrustum(-0.5f, 0.5f, -0.5f, 0.5f, 1.0f, 3.0f);

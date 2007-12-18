@@ -98,6 +98,22 @@ void MainFrame::load_file(const wxChar * name){
 
 };
 
+void MainFrame::save_file(const wxChar * name){
+  wxFileOutputStream input_file(name);
+  wxZlibOutputStream compress(input_file);
+  compress.Write((void *)mm.vol.m_data.c_str(), mm.vol.m_data.size());
+};
+
+
+//load a predifined volume, for testing.
+void MainFrame::OnTest(wxCommandEvent & event){
+  try{
+    load_file(_T("test.mgz"));
+  }catch(char const * i){
+    printf("Unable to load test file; reason: %s\n", i);
+  };
+};
+
 void MainFrame::OnLoadFile(wxCommandEvent& event){
   wxString name = ::wxFileSelector(_T("Load data"), 
                                    _T(""),
@@ -112,14 +128,6 @@ void MainFrame::OnLoadFile(wxCommandEvent& event){
   };
 };
 
-void MainFrame::OnTest(wxCommandEvent & event){
-  try{
-    load_file(_T("test.mgz"));
-  }catch(char const * i){
-    printf("Unable to load test file; reason: %s\n", i);
-  };
-};
-
 void MainFrame::OnSaveFile(wxCommandEvent& event){
   wxString name = ::wxFileSelector(_T("Save data"), 
                                    _T(""),
@@ -127,7 +135,7 @@ void MainFrame::OnSaveFile(wxCommandEvent& event){
 				   _T(""),
                                    _T("FreeSurfer volume(*.mgz)")); 
   if(!name.empty()){
-    //printf(name.c_str());
+    save_file(name);
   }else{
     printf("Ok, next time.\n");
   };
@@ -136,7 +144,7 @@ void MainFrame::OnSaveFile(wxCommandEvent& event){
 
 /*static*/ MainFrame *MainFrame::Create(MainFrame *parentFrame, bool isCloneWindow)
 {
-    wxString str = wxT("wxWidgets OpenGL Cube Sample");
+  wxString str = wxT("wxVoxelBrain"); //wxWidgets OpenGL Cube Sample
     if (isCloneWindow) str += wxT(" - Clone");
 
     MainFrame *frame = new MainFrame(NULL, str, wxDefaultPosition,
