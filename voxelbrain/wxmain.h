@@ -302,6 +302,7 @@ public:
 private:
 
     void load_file(const wxChar *);
+    void save_file(const wxChar *);
 
     MainFrame(wxWindow *parent, const wxString& title, const wxPoint& pos,
             const wxSize& size, long style = wxDEFAULT_FRAME_STYLE);

@@ -27,6 +27,7 @@ public:
     void OnKeyDown(wxKeyEvent& event);
     void OnKeyUp(wxKeyEvent& event);
     void OnEnterWindow(wxMouseEvent& event);
+    void OnMouseMove(wxMouseEvent& event);
 
     void Render();
     void InitGL();
@@ -59,3 +60,7 @@ DECLARE_EVENT_TABLE()
 
 
 #endif //__wxgl_h__
+
+
+
+
