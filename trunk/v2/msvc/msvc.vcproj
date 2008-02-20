@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(InputDir)/bin/$(ConfigurationName)"
-			IntermediateDirectory="$(InputDir)/bin/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="deps\glfw\include;deps\sparsehash\src\windows;deps\sparsehash\src;include"
+				AdditionalIncludeDirectories="..\deps\glfw\include;..\deps\sparsehash\src\windows;..\deps\sparsehash\src;..\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -62,9 +62,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib $(NoInherit) user32.lib opengl32.lib glu32.lib glfw.lib"
-				OutputFile="$(InputDir)/bin/voxbrw_debug.exe"
+				OutputFile="$(SolutionDir)$(ConfigurationName)\voxbr.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;deps\glfw\support\msvc80\Debug&quot;"
+				AdditionalLibraryDirectories="&quot;..\deps\glfw\support\msvc80\Debug&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				EntryPointSymbol=""
@@ -97,7 +97,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
@@ -140,7 +140,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib $(NoInherit) user32.lib opengl32.lib glu32.lib glfw.lib"
-				OutputFile="$(ConfigurationName)/voxbr.exe"
+				OutputFile="$(SolutionDir)$(ConfigurationName)\voxbr.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;..\deps\glfw\support\msvc80\Release&quot;"
 				GenerateDebugInformation="true"

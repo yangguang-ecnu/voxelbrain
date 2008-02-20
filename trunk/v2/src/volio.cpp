@@ -6,7 +6,7 @@
  author: Konstantin Levinski
  description:
 
-
+ Volume Input and Output.
 */
 #include "nifti.h"
 #include "volio.h"
