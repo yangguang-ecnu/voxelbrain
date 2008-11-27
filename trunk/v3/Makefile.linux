@@ -1,0 +1,5 @@
+CC=g++
+LDLIBS = -lz -lglut -lGL -lGLU
+
+3dtex: 
+
