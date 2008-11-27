@@ -1,0 +1,15 @@
+#summary Ideas on how to deal with file structure of the porject.
+
+= Introduction =
+
+  * source files
+  * libs
+  * includes
+
+Source files are written by me, totally and completely understood, etc.
+Libraries - reusable stuff, linked or copied there from respective dependencies.
+Includes - respective .h files, needed to support libs; own includes are placed in root.
+
+Once something becomes big, it becomes a separate library... sort of.
+
+= Details =
