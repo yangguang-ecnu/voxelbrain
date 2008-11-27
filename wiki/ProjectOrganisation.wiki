@@ -13,3 +13,18 @@ Includes - respective .h files, needed to support libs; own includes are placed 
 Once something becomes big, it becomes a separate library... sort of.
 
 = Details =
+
+Problems of information organisation:
+
+  * different ontologies.
+    * header - interface of a module
+    * potential candidate for includes, once it matures.
+  * class names
+    * finer grained usage abstraction (Buzz-Buzz-Buzz)
+  * variable names
+    * information on intended behaviour
+    * refactoring
+  * file names
+    * compilation 
+    * separation into library
+    
