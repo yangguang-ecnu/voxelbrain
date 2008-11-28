@@ -1,4 +1,0 @@
-CC=gcc
-LDLIBS = -lglut -lGL -lGLU
-
-3dtex:
