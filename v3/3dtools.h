@@ -5,6 +5,7 @@
 
 #include "v3.h"
 #include "fastvolume.h"
+#include "misc.h"
 
 //Crossection of a FastVolume.
 
@@ -34,7 +35,8 @@ class Crossection {
 should be placed inside a 256 cube.*/
 
 class Drawable {
-  void Draw() = 0;
+ public:
+  virtual void Draw() = 0;
 };
 
 //Should be draggable around with a mouse;
@@ -45,7 +47,7 @@ public:
   void DrawFrame(); // Waits for events;
   void Loop();
 
-  Drawable & scene;
+  Drawable & scene_;
 };
 
 #endif // __3dtools_h__

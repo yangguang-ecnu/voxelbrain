@@ -3,7 +3,7 @@
 #include "3dtools.h"
 #include "fastvolume.h"
 #include "loader.h"
-#include "glfw.h"
+#include <GL/glfw.h>
 
 // Test loading of volume
 TEST(Mgz, Interface){
