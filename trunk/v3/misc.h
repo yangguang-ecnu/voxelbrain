@@ -25,5 +25,5 @@ class Validatable {
   bool valid_;
 };
 
-#endif __misc_h__
+#endif //__misc_h__
 

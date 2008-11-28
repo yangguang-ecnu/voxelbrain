@@ -1,5 +1,5 @@
 #include "gl_points.h"
-#define GLFW_DLL
+//#define GLFW_DLL
 #include "GL/glfw.h"
 #include "v3.h"
 #include "v3tools.h"

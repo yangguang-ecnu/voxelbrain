@@ -361,16 +361,16 @@ void read_voxels(std::string in, GlPoints * pnt, bool _half = false, bool _tru =
   };
 
   char buf[1000];
-  fgets( buf, 1000, f); //first line, don't care
+  if(0 == fgets( buf, 1000, f))printf("Failure\n"); //first line, don't care //TODO Error handling
   int points;
   int tris;
-  fscanf(f, "%d %d\n", &points, &tris);
+  if(0 == fscanf(f, "%d %d\n", &points, &tris))printf("Failure\n");
   printf("trying to get %d points", points);
   //reading lines
   for(int i = 0; i < points; i++){
     V3f in;
     int dummy;
-    fscanf(f, "%f  %f  %f  %d\n", &in.x, &in.y, &in.z, &dummy);
+    if(0 == fscanf(f, "%f  %f  %f  %d\n", &in.x, &in.y, &in.z, &dummy))printf("Failure\n"); //TODO Error handling
     in = V3f(-in.x, -in.z, +in.y);
     //  in+=V3f(124.34, 100.59, 138.53);
     //in+=V3f(4.65, 27.4, -10.53);
@@ -394,7 +394,7 @@ void read_voxels(std::string in, GlPoints * pnt, bool _half = false, bool _tru =
   //  std::vector<int> tristor; //triangle storage
   for(int i = 0; i < tris; i++){
     int a, b, c, zero;
-    fscanf(f, "%d %d %d %d\n", &a, &b, &c, &zero);
+    if( 0 == fscanf(f, "%d %d %d %d\n", &a, &b, &c, &zero))printf("Failure\n");
     m[0]=stor[a];
     m[1]=stor[b];
     m[2]=stor[c];

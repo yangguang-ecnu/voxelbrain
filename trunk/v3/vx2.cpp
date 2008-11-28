@@ -1,6 +1,6 @@
 #define GLFW_DLL
 
-#include "glfw.h"
+#include "GL/glfw.h"
 #include "gui.h"
 #include "v3.h"
 #include <stdio.h>
@@ -11,6 +11,7 @@
 #include "misc.h"
 #include "color.h"
 
+#include <stdlib.h>
 
 #ifdef LINUX
 /// artificially adding a dummy local constant to force this thing compile;
@@ -405,7 +406,7 @@ void join(main_module & core, string a, string b, string res)
 bool exists(string filename){
   FILE * ex = fopen(filename.c_str(), "r");
   if(!ex) {
-    printf((string("") + "Unable to find " + filename + "\n").c_str());
+    printf("%s", (string("") + "Unable to find " + filename + "\n").c_str());
     return false;
   };
   fclose(ex);
@@ -444,7 +445,7 @@ int main(int argc, char ** argv)
   if(argc > 1){
 
     if(strstr(argv[1], "help")){
- 	printf(HELP_HELP);
+      printf("%s",HELP_HELP);
 	return 1;
     };
 

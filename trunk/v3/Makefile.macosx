@@ -10,8 +10,7 @@ GLFW_INCLUDE:=
 GTEST_STATIC:=l/projects/gtest/gtest-1.1.0/lib/libgtest_main.la
 GTEST_INCLUDE:=/home/kdl/projects/gtest/gtest-1.1.0/include
 
+LINKFLAGS := ../../deps/glfw/lib/macosx/libglfw.a ../../deps/anttweakbar/src/libant.a -framework AGL -framework OpenGL -framework Carbon -lz
+CXXFLAGS := -mmacosx-version-min=10.4 -DMACOSX
 
-LINKFLAGS := -lGL -lGLU -lXrandr -lz
-CXXFLAGS := -DLINUX
-
--include Makefile
+-include ../Makefile

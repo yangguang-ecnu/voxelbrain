@@ -28,7 +28,7 @@ void InteractiveRenderer::Loop(){
 };
 
 void InteractiveRenderer::DrawFrame(){
-  SetupProjections(); // viewport, projection and modelview go here.
+  //SetupProjections(); //TODO viewport, projection and modelview go here.
   scene_.Draw();
   glfwWaitEvents();
 };
