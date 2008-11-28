@@ -1,16 +1,16 @@
 #AntTweakBar (without X11 support)
-ATB_STATIC := /home/kdl/projects/anttweakbar/atb_osx_lean/lib/atb.a
-ATB_INCLUDE:= /home/kdl/projects/anttweakbar/atb_osx_lean/include
+ATB_STATIC := /Users/desi/kdl/atb/atb_osx_lean/lib/atb.a
+ATB_INCLUDE:= /Users/desi/kdl/atb/atb_osx_lean/include
 
-#GLFW; includes use GL/glfw.h, which is default on linux.
-GLFW_STATIC:= /usr/lib/libglfw.a
-GLFW_INCLUDE:=  
+#GLFW
+GLFW_STATIC:= /Users/desi/kdl/glfw/glfw/lib/macosx/libglfw.a
+GLFW_INCLUDE:= /Users/desi/kdl/glfw/glfw/include
 
 #GTEST
-GTEST_STATIC:=l/projects/gtest/gtest-1.1.0/lib/libgtest_main.la
-GTEST_INCLUDE:=/home/kdl/projects/gtest/gtest-1.1.0/include
+GTEST_STATIC:= /Users/desi/kdl/gtest/lib/libgtest_main.la
+GTEST_INCLUDE:= /Users/desi/kdl/gtest/include
 
-LINKFLAGS := ../../deps/glfw/lib/macosx/libglfw.a ../../deps/anttweakbar/src/libant.a -framework AGL -framework OpenGL -framework Carbon -lz
+LINKFLAGS := -framework AGL -framework OpenGL -framework Carbon -lz
 CXXFLAGS := -mmacosx-version-min=10.4 -DMACOSX
 
--include ../Makefile
+-include Makefile

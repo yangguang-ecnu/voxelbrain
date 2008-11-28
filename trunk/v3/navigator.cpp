@@ -1,6 +1,5 @@
 #include "navigator.h"
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include "GL/glfw.h"
 
 ///setting inital state to the camera;
 camera::camera() {
