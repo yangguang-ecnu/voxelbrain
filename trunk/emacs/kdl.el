@@ -6,7 +6,11 @@
 ;(load-library "kdl")
 
 ;loading libraries
+(load-library "vc-svn")
 (load-library "psvn")
+
+
+(add-to-list 'vc-handled-backends 'SVN)
 
 (tool-bar-mode 0) ; Disable toolbars and menubars for real estate.
 (menu-bar-mode 0)
