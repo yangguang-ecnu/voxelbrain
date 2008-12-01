@@ -28,10 +28,8 @@ io.o \
 3dtools.o
 
 VX2_TESTS := surface_unittest.o \
-	  misc_unittest.o \
 	  io_unittest.o \
-	  3dtools_unittest.o \
-	  fastvolume_unittest.o
+	  3dtools_unittest.o
 
 #build dependencies using g++
 deps: 
@@ -42,8 +40,8 @@ vx2: $(VX2_CODE) vx2.o
 	$(CXX) $(VX2_CODE) vx2.o $(LINKFLAGS) -o vx2
 
 #vx2 main build taret.
-tests: $(VX2_CODE)  
-	$(CXX) $(VX2_CODE) $(GTEST_STATIC) $(LINKFLAGS) -o tests
+tests: $(VX2_CODE) $(VX2_TESTS) 
+	$(CXX) $(VX2_CODE) $(VX2_TESTS) $(GTEST_STATIC) $(LINKFLAGS) -o tests
 
 clean:
 	rm *.o vx2

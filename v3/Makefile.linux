@@ -4,7 +4,7 @@ ATB_INCLUDE:= /home/kdl/projects/anttweakbar/atb_osx_lean/include
 
 #GLFW; includes use GL/glfw.h, which is default on linux.
 GLFW_STATIC:= /usr/lib/libglfw.a
-GLFW_INCLUDE:=  
+GLFW_INCLUDE:= /usr/include
 
 #GTEST
 GTEST_STATIC:=/home/kdl/projects/gtest/gtest-1.1.0/lib/.libs/libgtest_main.a /home/kdl/projects/gtest/gtest-1.1.0/lib/.libs/libgtest.a 
