@@ -7,7 +7,7 @@ GLFW_STATIC:= /usr/lib/libglfw.a
 GLFW_INCLUDE:=  
 
 #GTEST
-GTEST_STATIC:=l/projects/gtest/gtest-1.1.0/lib/libgtest_main.la
+GTEST_STATIC:=/home/kdl/projects/gtest/gtest-1.1.0/lib/.libs/libgtest_main.a /home/kdl/projects/gtest/gtest-1.1.0/lib/.libs/libgtest.a 
 GTEST_INCLUDE:=/home/kdl/projects/gtest/gtest-1.1.0/include
 
 
