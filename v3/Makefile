@@ -41,6 +41,10 @@ deps:
 vx2: $(VX2_CODE) vx2.o 
 	$(CXX) $(VX2_CODE) vx2.o $(LINKFLAGS) -o vx2
 
+#vx2 main build taret.
+tests: $(VX2_CODE)  
+	$(CXX) $(VX2_CODE) $(GTEST_STATIC) $(LINKFLAGS) -o tests
+
 clean:
 	rm *.o vx2
 
