@@ -2,6 +2,7 @@
 
 #include "GL/glfw.h"
 #include "gui.h"
+#include "surface.h" //for read_surface_binary
 #include "v3.h"
 #include <stdio.h>
 #include "gl_wrapper.h"
@@ -37,7 +38,7 @@ struct main_module : public gl_wrapper_reciever {
   main_module():crossection(& volume){
     render_required = true;
     zoomf = 1.0;
-};
+  };
 
   struct t_proj {
     double matrix[16];
@@ -159,10 +160,12 @@ struct main_module : public gl_wrapper_reciever {
 
     if(render_required == true || st.interface_updated == true){
       //
-      if(volume.vol.updated){
+      /*
+	if(volume.vol.updated){
 	volume.vol.updated = false;
 	crossection.update(volume.vol, volume.cursor);
       };
+      */
       
       //proj.rot(0.15, 0.092);
       //printf("w%d:h%d\n", width, height);
@@ -195,10 +198,10 @@ struct main_module : public gl_wrapper_reciever {
       crossection.draw_box(); //using volume projection
       volume.draw(proj.z());
   
-      if(crossection.update_needed)
+      /*      if(crossection.update_needed)
 	crossection.update(volume.vol, V3f(-1,-1,-1));
       crossection.draw();
-
+      */
       gui_draw();
 
       render_required = false;
@@ -533,6 +536,10 @@ int main(int argc, char ** argv)
     printf("No command given; trying to use default brainmask.mgz\n"); //else, just load default stuff
     if( ! core.volume.load(NULL) )return -1;
     set_current_file("Default dummy.");
+    Surface & it = *get_active_surfaces();
+    //    read_surface_binary(it, "lh.pial");
+    //    read_surface_binary(it, "rh.pial");
+
   };
 
   core.volume.find_surface();
