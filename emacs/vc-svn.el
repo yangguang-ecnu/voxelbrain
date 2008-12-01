@@ -223,6 +223,17 @@ RESULT is a list of conses (FILE . STATE) for directory DIR."
   (vc-svn-registered file)
   (vc-file-getprop file 'vc-working-revision))
 
+
+;; Provides workfile-version for SVN backend ; (//KDL)
+(defun vc-svn-workfile-version (file)
+  "SVN-specific version of `vc-workfile-version'."
+  ;; There is no need to consult RCS headers under SVN, because we
+  ;; get the workfile version for free when we recognize that a file
+  ;; is registered in SVN.
+  (vc-svn-registered file)
+  (vc-file-getprop file 'vc-workfile-version))
+
+
 ;; vc-svn-mode-line-string doesn't exist because the default implementation
 ;; works just fine.
 
