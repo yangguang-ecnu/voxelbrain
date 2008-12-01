@@ -6,15 +6,21 @@
 ;(load-library "kdl")
 
 ;loading libraries
+
+;; Subversion
 (load-library "vc-svn")
 (load-library "psvn")
-
-
 (add-to-list 'vc-handled-backends 'SVN)
 
 (tool-bar-mode 0) ; Disable toolbars and menubars for real estate.
 (menu-bar-mode 0)
-(set-default-font "6x10")
+(set-default-font "6x10");; TODO - check that the font is avaliable.
+
+;;Interactive buffers, from http://www.emacswiki.org/emacs-en/InteractivelyDoThings#toc6.
+(require 'ido)
+(ido-mode t)
+
+
 
 ;variables
 (setq woman-use-own-frame nil); show manuals in the same frame.
