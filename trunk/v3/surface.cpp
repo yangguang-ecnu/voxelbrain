@@ -75,7 +75,7 @@ bool read_surface_binary(Surface & surf, std::string name){
   //int dummy;
     data.GetFloat(&in.x).GetFloat(&in.y).GetFloat(&in.z);
     in = V3f(-in.x, +in.z, +in.y);
-    in+=V3f(128, 127, 128);
+    in+=V3f(128, 127, 128); //arbitrary correction.
     //  printf("%f, %f, %f\n", in.x, in.y, in.z);
     surf.v.push_back(in);
     seed += in;

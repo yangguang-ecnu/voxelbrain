@@ -39,15 +39,21 @@ class Drawer{
   virtual void draw() = 0;
 };
 
+/*
+ Simplest object for fast scene configuration.
+ Provides opengl context.
+ */
 class Scene{
+public:
   void Run();
-  void Add3D();
 private:
+  void Add3D();
   void OpenWindow();
   void CloseWindow();
   void DrawFrame();
 };
-  void OpenWindow(){
+ 
+void Scene::OpenWindow(){
     glfwInit();
     if( !glfwOpenWindow( 500, 500, 0,0,0,0, 16,0, GLFW_WINDOW ) )
       {
@@ -59,7 +65,7 @@ private:
     glfwDisable( GLFW_AUTO_POLL_EVENTS );
   };
 
-void DrawFrame(){
+void Scene::DrawFrame(){
       glClear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
       glBegin(GL_TRIANGLES);
       glVertex3f(0,0,0);
@@ -68,21 +74,25 @@ void DrawFrame(){
       glEnd();
 };
 
-void CloseWindow(){
+void Scene::CloseWindow(){
     glfwTerminate();
 };
 
-TEST(OGL, BasicWindow){
-
-    do
+void Scene::Run(){
+  OpenWindow();
+  
+  do
     {
       DrawFrame();
       glfwSwapBuffers();
       glfwWaitEvents();
     }
-    while(!glfwGetKey( GLFW_KEY_ESC ) &&
-	  glfwGetWindowParam( GLFW_OPENED ));
-
+  while(!glfwGetKey( GLFW_KEY_ESC ) &&
+	glfwGetWindowParam( GLFW_OPENED ));
 };
 
+TEST(OGL, BasicWindow){
+  Scene x;
+  x.Run();
+};
 

@@ -55,9 +55,10 @@ TEST(Io, File){
   std::string in = ReadFile("lh.pial");
   std::string none = ReadFile("lh_unexistent.pial");
   int string_size = in.size();
-  EXPECT_EQ(3940566, string_size);
+  EXPECT_EQ(5505349, string_size);
   EXPECT_EQ(0, none.size());
-  system("rm lh_test.pial");
+  int result;
+  result = system("rm lh_test.pial");
   EXPECT_TRUE(WriteFile("lh_test.pial", in));
   std::string test = ReadFile("lh_test.pial");
   EXPECT_EQ(string_size, test.size());
@@ -70,7 +71,7 @@ TEST(Io, DirectIntefrace){
   io.rewind();
   EXPECT_EQ(23, io.GetChar()) << "Pointer at " << io.get_position();
   EXPECT_EQ(32, io.GetChar());
-  EXPECT_FLOAT_EQ(3.4f, io.GetFloat());
+  EXPECT_FLOAT_EQ(3.4f, io.GetFloat()) << "Pointer at " << io.get_position();
   io.GetFloat(&test);
   EXPECT_FLOAT_EQ(5.4f, test);
   EXPECT_TRUE(io.valid());
