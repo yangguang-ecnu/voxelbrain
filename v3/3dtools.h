@@ -7,23 +7,11 @@
 #include "fastvolume.h"
 #include "misc.h"
 
-//Crossection of a FastVolume.
+/*
+  Draw unit sphere.
+*/
+void drawSphere(int steps, float radius);
 
-class Crossection {
-  Crossection & Resize(int, int);
-  Crossection & Position(V3f &);
-  Crossection & Orientation(V3f &);
-  Crossection & Draw(); 
-
- private:
-
-  Crossection & Update(const FastVolume &);
-  
-  V3f position_;
-  V3f orientation_;
-  int width_; 
-  int height_;
-};
 
 /*
   Simplest interface to OpenGL;
@@ -39,15 +27,8 @@ class Drawable {
   virtual void Draw() = 0;
 };
 
-//Should be draggable around with a mouse;
-class InteractiveRenderer: public Validatable {
-public:
-  InteractiveRenderer(Drawable &);
-  ~InteractiveRenderer();
-  void DrawFrame(); // Waits for events;
-  void Loop();
+int runScene(Drawable &);
 
-  Drawable & scene_;
-};
+
 
 #endif // __3dtools_h__
