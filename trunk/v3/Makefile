@@ -43,6 +43,9 @@ vx2: $(VX2_CODE) vx2.o
 tests: $(VX2_CODE) $(VX2_TESTS) 
 	$(CXX) $(VX2_CODE) $(VX2_TESTS) $(GTEST_STATIC) $(LINKFLAGS) -o tests
 
+tags:
+	etags --declarations *.cpp *.h $(GLFW_INCLUDE)/GL/glfw.h
+
 clean:
 	rm *.o vx2
 
