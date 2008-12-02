@@ -20,15 +20,37 @@
 (require 'ido)
 (ido-mode t)
 
-
+;;Winner mode
+(when (fboundp 'winner-mode)
+      (winner-mode 1))
 
 ;variables
 (setq woman-use-own-frame nil); show manuals in the same frame.
 
 (global-set-key "\M-`" 'hippie-expand) ; Come up with autocompletions; surprizingly useful.
-(global-set-key "\C-x u" 'undo) ; Mor convinient for undo
 (global-set-key "\C-c t" 'toggle-truncate-lines) ; Wrap-unwrap lines
+(global-set-key "\C-c g" 'find-file-at-point) ; Go to whatever is under cursor
 
 (setq truncate-partial-width-windows nil) ; Enable wrapping-inwrapping for split buffers.
 
-;; ~/.emacs_$SHELLNAME - srartup code for shells in emacs.
+(global-set-key
+
+;; function for customizing
+(defun kdl () 
+  "open kdl.el"
+  (interactive)
+  (find-file "~/.emacs.d/kdl.el"))
+
+;;scratch stuff
+(defun kdlt () 
+  "Kdl Test"
+  (interactive)
+  (let
+      ((url (thing-at-point 'url))
+       (file (thing-at-point 'filename)))
+    (progn 
+      (if (file-exists-p file)
+	  (print "file") (print "url")))))
+
+;;FYI
+;; ~/.emacs_$SHELLNAME - startup code for shells in emacs.
