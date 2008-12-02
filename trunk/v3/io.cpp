@@ -29,12 +29,12 @@ std::string Io::content(){return content_;};
   //Parametrized function to read different types using IO.
 template<class T> 
 Io & Read(Io & in, T * result){
-  if ((in.content_.size() - in.position_)>=sizeof(*result)) {
-    for (int i = 0; i < sizeof(*result); i++) {
-      ((char *)result)[i] = in.content_[in.position_ + sizeof(*result) - i - 1];
+  if ((in.content_.size() - in.position_)>=sizeof(T)) {
+    for (int i = 0; i < sizeof(T); i++) {
+      ((char *)result)[i] = in.content_[in.position_ + sizeof(T) - i - 1];
     };
 
-    in.position_ += sizeof(*result); // Updating position.
+    in.position_ += sizeof(T); // Updating position.
       } else {
     in.valid(false);
   };
@@ -54,13 +54,13 @@ template<class T>
 Io & Write(Io & in, T * result){
   //Extend the string if current position is exactly at the end.
   if (in.get_position() == in.size()) //Append string of spaces.
-    in.content_ += string (4, ' '); 
+    in.content_ += string (sizeof(T), ' '); 
   
-  if ((in.size() - in.get_position()) >= sizeof(*result)) { //Replace.
-    for (int i = 0; i < sizeof(*result); i++){ //Copy bytes.
-      in.content_[in.get_position() + sizeof(*result) - i - 1] = ((char *)result)[i];
+  if ((in.size() - in.get_position()) >= sizeof(T)) { //Replace.
+    for (int i = 0; i < sizeof(T); i++){ //Copy bytes.
+      in.content_[in.get_position() + sizeof(T) - i - 1] = ((char *)result)[i];
     };
-    in.position_ += sizeof(*result); // Updating position.
+    in.position_ += sizeof(T); // Updating position.
   } else { //Too little space to replace and not appending; Error.
     in.valid(false);
   };

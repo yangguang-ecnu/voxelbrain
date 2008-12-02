@@ -64,16 +64,33 @@ TEST(Io, File){
   EXPECT_EQ(string_size, test.size());
 };
 
+/*
+Trying basic IO
+
+ */
+TEST(Io, Types){ //+
+  Io io("");
+  io.PutChar(23);
+  io.PutFloat(1.0f);
+  io.PutShort(378);
+  io.PutInt(65537);
+  io.rewind();
+  EXPECT_EQ(23, io.GetChar()) << "Pointer at " << io.get_position();
+  EXPECT_FLOAT_EQ(1.0f, io.GetFloat()) << "Pointer at " << io.get_position();
+  EXPECT_FLOAT_EQ(378, io.GetShort()) << "Pointer at " << io.get_position();
+  EXPECT_FLOAT_EQ(65537, io.GetInt()) << "Pointer at " << io.get_position();
+};
+
 TEST(Io, DirectIntefrace){
-  Io io(""); float test;
+  Io io(""); short test;
   EXPECT_EQ(0, io.get_position());
-  io.PutChar(23).PutChar(32).PutFloat(3.4f).PutFloat(5.4f);
+  io.PutChar(23).PutChar(32).PutShort(256).PutShort(1);
   io.rewind();
   EXPECT_EQ(23, io.GetChar()) << "Pointer at " << io.get_position();
   EXPECT_EQ(32, io.GetChar());
-  EXPECT_FLOAT_EQ(3.4f, io.GetFloat()) << "Pointer at " << io.get_position();
-  io.GetFloat(&test);
-  EXPECT_FLOAT_EQ(5.4f, test);
+  EXPECT_FLOAT_EQ(256, io.GetShort()) << "Pointer at " << io.get_position();
+  io.GetShort(&test);
+  EXPECT_FLOAT_EQ(1, test);
   EXPECT_TRUE(io.valid());
 };
 
