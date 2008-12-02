@@ -30,6 +30,7 @@
 (global-set-key "\M-`" 'hippie-expand) ; Come up with autocompletions; surprizingly useful.
 (global-set-key "\C-c t" 'toggle-truncate-lines) ; Wrap-unwrap lines
 (global-set-key "\C-c g" 'find-file-at-point) ; Go to whatever is under cursor
+(global-set-key "\C-c k" 'kill-buffer) ; Alternative binding for killing buffer
 
 (setq truncate-partial-width-windows nil) ; Enable wrapping-inwrapping for split buffers.
 
