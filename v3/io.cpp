@@ -24,7 +24,6 @@ Io & Io::set_position( int position){
   };
 };
 
-
 std::string Io::content(){return content_;};
 
   //Parametrized function to read different types using IO.
@@ -59,8 +58,7 @@ Io & Write(Io & in, T * result){
   
   if ((in.size() - in.get_position()) >= sizeof(*result)) { //Replace.
     for (int i = 0; i < sizeof(*result); i++){ //Copy bytes.
-      in.content_[in.get_position() + sizeof(*result) - i - 1] = 
-	((char *)result)[i];
+      in.content_[in.get_position() + sizeof(*result) - i - 1] = ((char *)result)[i];
     };
     in.position_ += sizeof(*result); // Updating position.
   } else { //Too little space to replace and not appending; Error.
