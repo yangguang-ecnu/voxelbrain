@@ -7,7 +7,7 @@ GLFW_STATIC:= /Users/desi/kdl/glfw/glfw/lib/macosx/libglfw.a
 GLFW_INCLUDE:= /Users/desi/kdl/glfw/glfw/include
 
 #GTEST
-GTEST_STATIC:= /Users/desi/kdl/gtest/lib/lib/.libs/libgtest_main.a  /Users/desi/kdl/gtest/lib/lib/.libs/libgtest_main.a
+GTEST_STATIC:= /Users/desi/kdl/gtest/lib/.libs/libgtest_main.a  /Users/desi/kdl/gtest/lib/.libs/libgtest.a
 GTEST_INCLUDE:= /Users/desi/kdl/gtest/include
 
 LINKFLAGS := -framework AGL -framework OpenGL -framework Carbon -lz
