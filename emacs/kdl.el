@@ -36,8 +36,6 @@
 
 (setq truncate-partial-width-windows nil) ; Enable wrapping-inwrapping for split buffers.
 
-(global-set-key
-
 ;; function for customizing
 (defun kdl () 
   "open kdl.el"
@@ -54,6 +52,7 @@
     (progn 
       (if (file-exists-p file)
 	  (print "file") (print "url")))))
+
 
 ;;FYI
 ;; ~/.emacs_$SHELLNAME - startup code for shells in emacs.
