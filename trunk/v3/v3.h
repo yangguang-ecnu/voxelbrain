@@ -73,6 +73,7 @@ Basic misc definitions
       float dot(const V3 & a) const { return x*a.x+y*a.y+z*a.z;};
 
       T operator[] (int i) const {return ((const T *)(&x))[i];};
+      T SetCoord (int i, T in) const {return ((T *)(&x))[i] = in;};
     
     };
 

@@ -6,31 +6,40 @@
   Range structure
 */
 
+#define EPSILON 0.0001 //TODO 
+const V3f V3_EPSILON(EPSILON, EPSILON, EPSILON);
+
 Range::Range(){ };
 Range::Range(const Range & in):min(in.min), max(in.max){ };
 Range::Range(const V3f & lower, const V3f & upper):min(lower), max(upper){ };
 
-bool GreaterThan(const V3f & a, const V3f & b){
+bool GreaterThanAll(const V3f & a, const V3f & b){
   return (a.x > b.x) && (a.y > b.y) && (a.z > b.z);
 };
 
-bool LessThan(const V3f & a, const V3f & b){
+bool LessThanAll(const V3f & a, const V3f & b){
   return (a.x < b.x) && (a.y < b.y) && (a.z < b.z);
 };
 
 bool ContainsPoint(const Range & r, const V3f & pnt){
-  return (LessThan(r.min, pnt) && GreaterThan(r.max, pnt));
+  return (LessThanAll(r.min, pnt) && GreaterThanAll(r.max, pnt));
 };
 
 bool ContainsRange(const Range & r, const Range & in){
-  return (LessThan(r.min, in.min) && GreaterThan(r.max, in.max));
+  return (LessThanAll(r.min, in.min) && GreaterThanAll(r.max, in.max));
 };
 
 bool IntersectsRange(const Range & r, const Range & in){
-  return (GreaterThan(r.max, in.min) && LessThan(r.min, in.max));
+  return (GreaterThanAll(r.max, in.min) && LessThanAll(r.min, in.max));
 };
 
-
+Range & ExpandRange(Range & r, const V3f & v){
+  for(int i = 0; i < 3; i++){
+    if(r.min[i] > v[i]) r.min.SetCoord(i, v[i] - EPSILON);
+    if(r.max[i] < v[i]) r.max.SetCoord(i, v[i] + EPSILON);
+    };
+  return r;
+};
 
 
 
