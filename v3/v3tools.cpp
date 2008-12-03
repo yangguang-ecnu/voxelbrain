@@ -10,16 +10,24 @@ Range::Range(){ };
 Range::Range(const Range & in):min(in.min), max(in.max){ };
 Range::Range(const V3f & lower, const V3f & upper):min(lower), max(upper){ };
 
-bool ContainsPoint(const Range & , const V3f & ){
-  return true;
+bool GreaterThan(const V3f & a, const V3f & b){
+  return (a.x > b.x) && (a.y > b.y) && (a.z > b.z);
 };
 
-bool ContainsRange(const Range &, const Range &){
-  return true;
+bool LessThan(const V3f & a, const V3f & b){
+  return (a.x < b.x) && (a.y < b.y) && (a.z < b.z);
 };
 
-bool IntersectsRange(const Range &, const Range &){
-  return true;
+bool ContainsPoint(const Range & r, const V3f & pnt){
+  return (LessThan(r.min, pnt) && GreaterThan(r.max, pnt));
+};
+
+bool ContainsRange(const Range & r, const Range & in){
+  return (LessThan(r.min, in.min) && GreaterThan(r.max, in.max));
+};
+
+bool IntersectsRange(const Range & r, const Range & in){
+  return (GreaterThan(r.max, in.min) && LessThan(r.min, in.max));
 };
 
 
