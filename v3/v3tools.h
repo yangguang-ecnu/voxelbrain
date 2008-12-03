@@ -2,6 +2,7 @@
 #define __V3TOOLS_H__
 
 #include "v3.h"
+#include "misc.h"
 
 struct Range{
   V3f min;
@@ -15,7 +16,7 @@ struct Range{
 bool ContainsPoint(const Range &, const V3f &);
 bool ContainsRange(const Range &, const Range &);
 bool IntersectsRange(const Range &, const Range &);
-
+Range & ExpandRange(Range &, const V3f &);
 
 
 ///Rotate a vector along an axis

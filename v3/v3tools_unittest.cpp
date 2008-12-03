@@ -20,3 +20,16 @@ TEST(V3tools, RangeBasic){
   EXPECT_FALSE(ContainsRange(one, intersecting));
   EXPECT_FALSE(ContainsRange(one, outside));
 };
+
+TEST(V3tools, RangeExpand){
+  Range one(V3f(0,0,0), V3f(1,1,1)); //start
+  const V3f pnt(100, -100, -100);
+  const V3f out(100.1, -100.1, -100.1);
+  const V3f in(99.9, -99.9, -99.9);
+  
+  Range expanded( (ExpandRange(one, pnt)) );
+
+  EXPECT_TRUE(ContainsPoint(expanded, pnt));
+  EXPECT_FALSE(ContainsPoint(expanded, out));
+  EXPECT_TRUE(ContainsPoint(expanded, in));
+};

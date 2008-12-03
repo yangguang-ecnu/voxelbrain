@@ -29,7 +29,8 @@ io.o \
 
 VX2_TESTS := surface_unittest.o \
 	  io_unittest.o \
-	  3dtools_unittest.o
+	  3dtools_unittest.o \
+	  v3tools_unittest.o
 
 #build dependencies using g++
 deps: 
