@@ -2,6 +2,30 @@
 #include <math.h> //for sin/cos
 #include <stdio.h> //printf
 
+/*
+  Range structure
+*/
+
+Range::Range(){ };
+Range::Range(const Range & in):min(in.min), max(in.max){ };
+Range::Range(const V3f & lower, const V3f & upper):min(lower), max(upper){ };
+
+bool ContainsPoint(const Range & , const V3f & ){
+  return true;
+};
+
+bool ContainsRange(const Range &, const Range &){
+  return true;
+};
+
+bool IntersectsRange(const Range &, const Range &){
+  return true;
+};
+
+
+
+
+
 ///stupid. but too much coffee already
 
 V3f rot_x(V3f in, float r){
