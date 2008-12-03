@@ -1,6 +1,8 @@
+/*
+For reference only.
+*/
 
-#include <GL/glut.h>
-#include <GL/glext.h>
+#include <GL/glfw.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -192,22 +194,25 @@ void draw_surface(){
 };
 
 
-void draw_cone(float displace){
-   float y, z;
-  int x;
+struct xyz{
 
-  float k = (float)displace/100.0;
+};
+void sphere_rasterizer(int x, int y, int maxx, int maxy){
+  
+};
+
+void draw_cone(float displace){
+  float x, float y;
 	 //draw first time
 k = 0;
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glEnable(GL_POLYGON_OFFSET_FILL);
-  glPolygonOffset(displace*20, displace*20);
 
   glEnable(GL_TEXTURE_3D);
   glBegin(GL_TRIANGLES);
   // texture coordinates are always specified before the vertex they apply to.
-  for (x = 0; x <= 0; x++) {
+  for (x = 0; x <= 4; x++) {
     glTexCoord3d(0.5+centervert[0]/2.0, 0.5+centervert[1]/2.0, centervert[2]/2.0);
     //glTexCoord3d(centervert[0], centervert[1], 2.0);			// texture stretches rather than glides over the surface with this
     glVertex3d(centervert[0], centervert[1], centervert[2]+k);
@@ -246,8 +251,8 @@ void display() {
   glRotated((double)angle / 5.0, 0.0, 0.0, 1.0);
   centervert[2] = sin((double)tick / 70.0) + 1.0;
 
-  glDepthFunc(GL_LESS);
-draw_cone(-0.4);
+  //  glDepthFunc(GL_LESS);
+  //draw_cone(-0.4);
  // glEnable(GL_STENCIL_TEST);
  // glStencilFunc();
  // glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
@@ -257,31 +262,7 @@ draw_cone(-0.4);
  // glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
   glEnable(GL_COLOR);
-
-#if 0 //AVOID LISTS
-  glBegin(GL_QUADS);
-
-co:nst int len = 300;
-  const float dx = 1.0 / len;
-  for(int i = -len; i < len; i++)
-    for(int j = -len; j < len; j++){
-      glColor3f(0.7,0,0.5+0.5*sin(dx*i+dx*j));
-      glVertex3f(dx*i,dx*j, 1+sin(dx*i+dx*j));
-      glColor3f(0.7,0,0.5+sin(dx*i+dx*j+dx));
-      glVertex3f(dx*i,dx*j+dx,1+sin(dx*i+dx*j+dx));
-      glColor3f(0.7,0,0.5+0.5*sin(dx*i+dx*j+2*dx));
-      glVertex3f(dx*i+dx,dx*j+dx,1+sin(dx*i+dx*j+dx+dx));
-      glColor3f(0.7,0,0.5+0.5*sin(dx*i+dx*j+dx));
-      glVertex3f(dx*i+dx,dx*j,1+sin(dx*i+dx*j+dx));
-    };
-  glEnd();
-#else
-#if 0 // we want lists
-  glCallList(1);
-#else
-  glDepthFunc(GL_GEQUAL);
   draw_surface(); 
-  glDepthFunc(GL_LESS);
   draw_cone(0);
 
 //  draw_surface(); 

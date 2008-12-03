@@ -1,6 +1,11 @@
+/*
+For reference only.
+*/
+
 #ifndef TEX3D_H
 #define TEX3D_H
 
+#include <GL/glut.h>
 #define APP_TITLE "Test"
 #define SCREEN_WIDTH 512
 #define SCREEN_HEIGHT 512
