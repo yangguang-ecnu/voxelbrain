@@ -14,7 +14,9 @@
 
 (tool-bar-mode 0) ; Disable toolbars and menubars for real estate.
 (menu-bar-mode 0)
-(set-default-font "6x10");; TODO - check that the font is avaliable.
+
+(if (x-list-fonts "6x10")
+    (set-default-font "6x10"))
 
 ;;Interactive buffers, from http://www.emacswiki.org/emacs-en/InteractivelyDoThings#toc6.
 (require 'ido)
