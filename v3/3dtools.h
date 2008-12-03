@@ -4,6 +4,7 @@
 #define __3dtools_h__
 
 #include "v3.h"
+#include "v3tools.h" //Range
 #include "fastvolume.h"
 #include "misc.h"
 
@@ -27,8 +28,34 @@ class Drawable {
   virtual void Draw() = 0;
 };
 
+/*
+  3D texturing.
+*/
+
+struct Texturizer: Validatable {
+  Texturizer(); //Size
+  ~Texturizer();
+  Range current_range;
+  bool force_update;
+  void * data;
+  int size;
+};
+
+//Make sure current texture area is suitable for the desired range
+//return false if it is not possible.
+bool CheckTexture(Texturizer & t, Range & r);
+const V3f & SetTexture(const Texturizer & , const V3f & where);
+
+
 int runScene(Drawable &);
 
+/*
+  Conviniences.
+ */
+
+const V3f & SetVertex(const V3f &);
+const V3f & SetTexture(const V3f &);
+const V3f & SetColor(const V3f &);
 
 
 #endif // __3dtools_h__
