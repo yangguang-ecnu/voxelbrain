@@ -3,6 +3,10 @@
 
 #include "3dtools.h"
 
+#ifndef PI
+#define PI 3.14159265
+#endif
+
 /*
   a: [0..2*PI];
   b: [-PI/2..PI/2].
