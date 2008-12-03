@@ -44,15 +44,15 @@ struct TexturedScene: public Drawable{
   };
 
   void Draw(){
-    test += 0.01;
-    V3f off(60*sin(test), 60*cos(test), 0);
-    V3f a(30.0f,30.0f,30.0f); //random quad
-    V3f b(30.0f,-30.0f,30.0f);
-    V3f c(-30.0f,-30.0f,30.0f);
-    V3f d(-30.0f, 30.0f,30.0f);
+    test += 0.1;
+    V3f off(10*sin(test), 10*cos(test), 0);
+    V3f a(20.0f,20.0f,5.0f); //random quad
+    V3f b(20.0f,-20.0f,-5.0f);
+    V3f c(-20.0f,-20.0f,-5.0f);
+    V3f d(-20.0f, 20.0f,5.0f);
     a+=off; b+=off; c+=off; d+=off;
     
-    Range cur(a,b); ExpandRange(cur,c); ExpandRange(cur, d);
+    Range cur(c,a); ExpandRange(cur,b); ExpandRange(cur, d);
     CheckTexture(texturizer_, cur);
         
     glBegin(GL_QUADS);
