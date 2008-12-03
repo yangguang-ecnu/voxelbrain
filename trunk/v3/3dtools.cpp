@@ -84,6 +84,10 @@ bool UpdateTexturizer(Texturizer & t, Range & r){
   
   //now, set new current_range:
   V3f center((r.min+r.max)/2);
+  center.x = floorf(center.x);
+  center.y = floorf(center.y);
+  center.z = floorf(center.z);
+
   V3f half_diagonal(SIZE/2, SIZE/2, SIZE/2);
   t.current_range = Range(center-half_diagonal, center+half_diagonal);
   
