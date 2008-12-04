@@ -6,8 +6,11 @@
 #include "v3.h"
 #include "gl_points.h"
 #include "misc.h"
+#include "3dtools.h"
 
 struct slices{
+
+  Textured texture;
 
   struct slice{
     unsigned char * data;
