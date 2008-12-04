@@ -11,25 +11,38 @@
   a: [0..2*PI];
   b: [-PI/2..PI/2].
  */
-void vertex_sphere(float a, float b, float r){
-  glColor3f(cos(b), cos(b)*cos(a), cos(b)*cos(a+b)); //come up with some colors
-  glVertex3f(cos(b)*sin(a)*r, cos(b)*cos(a)*r, sin(b)*r);
+
+void DrawSphereVertex(float a, float b, const V3f & where, float radius, Textured * t){
+  V3f pos(where); pos += V3f(cos(b)*sin(a)*radius, cos(b)*cos(a)*radius, sin(b)*radius);
+  if(t){
+    t->SetTexture(pos);
+  }else{
+    glColor3f(cos(b), cos(b)*cos(a), cos(b)*cos(a+b));
+  };
+    glVertex3f(pos);
 };
 
-void drawSphere(int steps, float r){
+void DrawSphere(const V3f & where, float radius, int steps, Textured * t){
+  if(t){ //Ensure we are in the proper place
+    V3f diagonal(radius, radius, radius);
+    Range range_to_check(where-diagonal, where+diagonal);
+    t->CheckTexture(range_to_check);
+  };
   V3f cur;
   const float da = PI/steps;
   const float db = PI/steps;
   glBegin(GL_QUADS);
   for(float a = 0; a < 2*PI; a+=da)
     for(float b = -PI/2; b < PI/2; b+=db){
-      vertex_sphere(a,b,r);
-      vertex_sphere(a,b+db,r);
-      vertex_sphere(a+da,b+db,r);
-      vertex_sphere(a+da,b,r);
+      DrawSphereVertex(a,b,where, radius,t);
+      DrawSphereVertex(a,b+db,where, radius,t);
+      DrawSphereVertex(a+da,b+db,where, radius,t);
+      DrawSphereVertex(a+da,b,where, radius,t);
     }; 
   glEnd();
 };
+
+
 
 /*
   Texturizer.
@@ -41,12 +54,18 @@ void drawSphere(int steps, float r){
 #define SIZE 64
 typedef unsigned char * BYTE;
 
-Texturizer::Texturizer(){
+Textured::Textured(){
+  printf("Allocating data.\n");
   data = malloc(SIZE*SIZE*SIZE*BPP);
-  if(!data)valid(false);
+  if(!data){
+    //valid(false);
+    printf("Allocation failed.\n");
+  }else{
+    printf("Data allocated.\n");
+  };
 };
 
-Texturizer::~Texturizer(){
+Textured::~Textured(){
   if(data) free(data);
   force_update = true;
 };
@@ -80,7 +99,7 @@ void UploadTexture(void * data){
   glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB8, SIZE, SIZE, SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 };
 
-bool UpdateTexturizer(Texturizer & t, Range & r){
+bool UpdateTextured(Textured & t, Range & r){
   
   //now, set new current_range:
   V3f center((r.min+r.max)/2);
@@ -109,25 +128,25 @@ bool UpdateTexturizer(Texturizer & t, Range & r){
 };
 
 //TODO - implement texture source; dummy for now.
-bool CheckTexture(Texturizer & t, Range & r){
+bool Textured::CheckTexture(Range & r){
 
-  if(t.force_update){ //First time.
-    t.force_update = false;
-    return UpdateTexturizer(t,r);
+  if(force_update){ //First time.
+    force_update = false;
+    return UpdateTextured( *this, r);
   };
 
   if((r.max.x - r.min.x) > SIZE ||
      (r.max.y - r.min.y) > SIZE ||
      (r.max.z - r.min.z) > SIZE)return false;
-  if(ContainsRange(t.current_range, r))return true;
+  if(ContainsRange(current_range, r))return true;
   
-  return UpdateTexturizer(t, r);
+  return UpdateTextured( *this, r);
 };
 
 
-const V3f & SetTexture(const Texturizer & t, const V3f & where){
-  V3f pos = (where - t.current_range.min)/SIZE; //calculating the 0..1 range
-  SetTexture(pos);
+const V3f & Textured::SetTexture(const V3f & where){
+  V3f pos = (where - current_range.min)/SIZE; //calculating the 0..1 range
+  glTexCoord3f(pos);
   return where;
 };
 
@@ -136,11 +155,11 @@ const V3f & SetTexture(const Texturizer & t, const V3f & where){
   Conviniences.
 */
 
-const V3f & SetVertex(const V3f & v){
+const V3f & glVertex3f(const V3f & v){
   glVertex3f(v.x, v.y, v.z); return v;
 };
 
-const V3f & SetTexture(const V3f & v){
+const V3f & glTexCoord3f(const V3f & v){
   glTexCoord3f(v.x, v.y, v.z); return v;
 };
 
@@ -153,6 +172,9 @@ const V3f & SetColor(const V3f & v){
    Rudimentary scene management
 */
 
+void Drawable::NextFrame(){
+  frame_no_++;
+};
 
 /*
   Projections
@@ -252,6 +274,7 @@ int runScene(Drawable & scene){
 
 	setupModelview();
 	
+	scene.NextFrame();
 	scene.Draw();
 	
        	glfwSwapBuffers();

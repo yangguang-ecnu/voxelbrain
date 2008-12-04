@@ -21,67 +21,64 @@ TEST(Mgz, Interface){
   EXPECT_EQ(random_voxel, volume.vol[5]);
 }; 
 
-
-struct QuadScene: public Drawable{
-  void Draw(){
-    glBegin(GL_QUADS);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(100,100,100); //random quad
-    glVertex3f(100,-100,100);
-    glVertex3f(-100,-100,100);
-    glVertex3f(-100, 100,100);
-    glEnd();
-
-  };
-};
-
-struct TexturedScene: public Drawable{
-  
-  Texturizer & texturizer_;
-  float test;
-
-  TexturedScene(Texturizer & in): texturizer_(in){
-  };
-
-  void Draw(){
-    test += 0.1;
-    V3f off(10*sin(test), 10*cos(test), 0);
-    V3f a(20.0f,20.0f,5.0f); //random quad
-    V3f b(20.0f,-20.0f,-5.0f);
-    V3f c(-20.0f,-20.0f,-5.0f);
-    V3f d(-20.0f, 20.0f,5.0f);
-    a+=off; b+=off; c+=off; d+=off;
-    
-    Range cur(c,a); ExpandRange(cur,b); ExpandRange(cur, d);
-    CheckTexture(texturizer_, cur);
-        
-    glBegin(GL_QUADS);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    SetVertex(SetTexture(texturizer_, a)); 
-    SetVertex(SetTexture(texturizer_, b)); 
-    SetVertex(SetTexture(texturizer_, c)); 
-    SetVertex(SetTexture(texturizer_, d)); 
-    glEnd();
-
-  };
-};
-
-struct SphereScene: public Drawable{
-  void Draw(){
-    drawSphere(6, 40.0f);
-  };
-};
-
 TEST(OGL, Quad){
-  QuadScene scene; runScene(scene);
+  struct : public Drawable{
+    void Draw(){
+      glBegin(GL_QUADS);
+      glColor3f(1.0f, 0.0f, 0.0f);
+      glVertex3f(100,100,100); //random quad
+      glVertex3f(100,-100,100);
+      glVertex3f(-100,-100,100);
+      glVertex3f(-100, 100,100);
+      glEnd();
+
+    };
+  } scene;
+  runScene(scene);
 };
 
 TEST(OGL, Sphere){
-  SphereScene scene; runScene(scene);
+  struct: public Drawable{
+    void Draw(){
+      DrawSphere( V3f(0,0,0), 30.0f);
+    };
+  } scene; 
+  runScene(scene);
 };
+
 
 TEST(OGL, TexturedQuad){
-  Texturizer tx;
-  TexturedScene scene(tx); runScene(scene);
+  struct TexturedScene: public Drawable, public Textured {
+    void Draw(){
+      V3f off(10*sin(0.1*frame_no_), 10*cos(0.13*frame_no_), 0);
+      V3f a(20.0f,20.0f,5.0f); //random quad
+      V3f b(20.0f,-20.0f,-5.0f);
+      V3f c(-20.0f,-20.0f,-5.0f);
+      V3f d(-20.0f, 20.0f,5.0f);
+      a+=off; b+=off; c+=off; d+=off;
+    
+      Range cur(c,a); ExpandRange(cur,b); ExpandRange(cur, d);
+      CheckTexture(cur);
+        
+      glBegin(GL_QUADS);
+      glColor3f(1.0f, 0.0f, 0.0f);
+      glVertex3f(SetTexture(a)); 
+      glVertex3f(SetTexture(b)); 
+      glVertex3f(SetTexture(c)); 
+      glVertex3f(SetTexture(d)); 
+      glEnd();
+
+    };
+  } scene; 
+  runScene(scene);
 };
 
+TEST(OGL, TexturedSphere){
+  struct: public Drawable, public Textured{
+    void Draw(){
+      DrawSphere(V3f(50*sin(0.05*frame_no_), 50*sin(0.07*frame_no_+34), 50*sin(0.03*frame_no_+65)), 30.0f, 60,  
+		 this);
+    };
+  } scene;
+  runScene(scene);
+};

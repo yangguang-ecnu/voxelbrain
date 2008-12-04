@@ -9,12 +9,6 @@
 #include "misc.h"
 
 /*
-  Draw unit sphere.
-*/
-void drawSphere(int steps, float radius);
-
-
-/*
   Simplest interface to OpenGL;
 */
 
@@ -26,25 +20,41 @@ should be placed inside a 256 cube.*/
 class Drawable {
  public:
   virtual void Draw() = 0;
+  virtual void NextFrame(); //next frame happened (More general tool for notifications?)
+
+  int frame_no_;
 };
 
 /*
   3D texturing.
 */
 
-struct Texturizer: Validatable {
-  Texturizer(); //Size
-  ~Texturizer();
+class Textured: public Validatable {
+
+ public:
+  bool CheckTexture( Range & r );
+  const V3f & SetTexture( const V3f & where );
+
+
+  Textured(); 
+  ~Textured();
   Range current_range;
+
+  //bad decision
   bool force_update;
+
+  //export to common Texture
   void * data;
   int size;
 };
 
-//Make sure current texture area is suitable for the desired range
-//return false if it is not possible.
-bool CheckTexture(Texturizer & t, Range & r);
-const V3f & SetTexture(const Texturizer & , const V3f & where);
+
+
+/*
+  Draw unit spheres.
+*/
+
+void DrawSphere(const V3f & where, float radius, int steps = 6, Textured * t = NULL);
 
 
 int runScene(Drawable &);
@@ -53,8 +63,8 @@ int runScene(Drawable &);
   Conviniences.
  */
 
-const V3f & SetVertex(const V3f &);
-const V3f & SetTexture(const V3f &);
+const V3f & glVertex3f(const V3f &);
+const V3f & glTexCoord3f(const V3f &);
 const V3f & SetColor(const V3f &);
 
 
