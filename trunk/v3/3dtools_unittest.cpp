@@ -82,3 +82,21 @@ TEST(OGL, TexturedSphere){
   } scene;
   runScene(scene);
 };
+
+TEST(OGL, TexturedFastVolumeSphere){
+  struct: public Drawable, public Textured{
+    void Draw(){
+      DrawSphere(V3f(50*sin(0.05*frame_no_), 50*sin(0.07*frame_no_+34), 50*sin(0.03*frame_no_+65)), 30.0f, 3,  
+		 this);
+    };
+  } scene;
+
+  FastVolume volume;
+  MgzLoader mri(volume);
+  EXPECT_TRUE(mri.Load("brainmask.mgz"));
+
+  scene.texturing_fastvolume = & volume;  
+
+  runScene(scene);
+};
+
