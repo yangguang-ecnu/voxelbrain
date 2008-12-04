@@ -23,6 +23,7 @@ void DrawSphereVertex(float a, float b, const V3f & where, float radius, Texture
 };
 
 void DrawSphere(const V3f & where, float radius, int steps, Textured * t){
+   glEnable(GL_TEXTURE_3D);
   if(t){ //Ensure we are in the proper place
     V3f diagonal(radius, radius, radius);
     Range range_to_check(where-diagonal, where+diagonal);
@@ -40,6 +41,8 @@ void DrawSphere(const V3f & where, float radius, int steps, Textured * t){
       DrawSphereVertex(a+da,b,where, radius,t);
     }; 
   glEnd();
+  glDisable(GL_TEXTURE_3D);
+
 };
 
 
@@ -55,6 +58,7 @@ void DrawSphere(const V3f & where, float radius, int steps, Textured * t){
 typedef unsigned char * BYTE;
 
 Textured::Textured(){
+  texturing_fastvolume = NULL;
   printf("Allocating data.\n");
   data = malloc(SIZE*SIZE*SIZE*BPP);
   if(!data){
@@ -74,13 +78,13 @@ int Offset(int x, int y, int z){
   return BPP*(z*SIZE*SIZE+y*SIZE+x);
 };
 
+GLuint texname = 0;
+
 void UploadTexture(void * data){
-  glEnable(GL_TEXTURE_3D);
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // our texture colors will replace the untextured colors
 
   // request 1 texture name from OpenGL
-  GLuint texname = 1;
-  //glGenTextures(1, &texname);
+  if(!texname)glGenTextures(1, &texname);
   // tell OpenGL we're going to be setting up the texture name it gave us	
   glBindTexture(GL_TEXTURE_3D, texname);	
   // when this texture needs to be shrunk to fit on small polygons, use linear interpolation of the texels to determine the color
@@ -111,15 +115,32 @@ bool UpdateTextured(Textured & t, Range & r){
   t.current_range = Range(center-half_diagonal, center+half_diagonal);
   
   //fill it with a dummy texture for now (maybe better done with an external class
+  Range fast_volume_range(V3f(0,0,0), V3f(255,255,255));
+
+  unsigned char res;
+
   V3f c(t.current_range.min); //start
   for(int x = 0; x < SIZE; x++)
     for(int y = 0; y < SIZE; y++)
       for(int z = 0; z < SIZE; z++){
 	V3f cur(c.x+x, c.y+y, c.z+z);
-	bool line_hit = !((int)cur.x % 10) || !((int)cur.y % 10) || !((int)cur.z % 10);
-	((BYTE)t.data)[Offset(x,y,z)] = 222;
-	((BYTE)t.data)[Offset(x,y,z)+1] = line_hit?100:200;
-	((BYTE)t.data)[Offset(x,y,z)+2] =  line_hit?200:100;
+	if(t.texturing_fastvolume){
+	  //	  if( cur.x > 0 && cur.y > 0 && cur.z > 0 &&
+	  //     cur.x < 255 && cur.y < 255 && cur.z < 255 ){
+	  res = (unsigned char)t.texturing_fastvolume->Sample((int)cur.x%255, (int)cur.y%255, (int)cur.z%255);
+	    //}else{
+	    //  res = 0;
+	    //};
+	  ((BYTE)t.data)[Offset(x,y,z)] = res;
+	  ((BYTE)t.data)[Offset(x,y,z)+1] = res;
+	  ((BYTE)t.data)[Offset(x,y,z)+2] =  res;
+	  
+	}else{
+	  bool line_hit = !((int)cur.x % 10) || !((int)cur.y % 10) || !((int)cur.z % 10);
+	  ((BYTE)t.data)[Offset(x,y,z)] = 222;
+	  ((BYTE)t.data)[Offset(x,y,z)+1] = line_hit?100:200;
+	  ((BYTE)t.data)[Offset(x,y,z)+2] =  line_hit?200:100;
+	};
       };
   //ready; now load the texture
   UploadTexture(t.data);
@@ -138,7 +159,9 @@ bool Textured::CheckTexture(Range & r){
   if((r.max.x - r.min.x) > SIZE ||
      (r.max.y - r.min.y) > SIZE ||
      (r.max.z - r.min.z) > SIZE)return false;
-  if(ContainsRange(current_range, r))return true;
+  if(ContainsRange(current_range, r)){
+    return true;
+  };
   
   return UpdateTextured( *this, r);
 };

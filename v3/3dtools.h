@@ -29,9 +29,12 @@ class Drawable {
   3D texturing.
 */
 
+
 class Textured: public Validatable {
 
  public:
+  FastVolume * texturing_fastvolume;
+
   bool CheckTexture( Range & r );
   const V3f & SetTexture( const V3f & where );
 
@@ -47,6 +50,7 @@ class Textured: public Validatable {
   void * data;
   int size;
 };
+
 
 
 

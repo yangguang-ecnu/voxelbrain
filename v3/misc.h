@@ -7,6 +7,10 @@
 #define MAX3(a,b,c) (MAX2(MAX2(a,b),c))
 #define CHOOSE_MAX(a, b, c, da, db, dc) (((a > b) && (a > c))?(da):((b>c)?(db):(dc)))
 
+#ifndef PI
+#define PI 3.14159265
+#endif
+
 float smooth_bell(float x);
 
 /// Determines if the state of the object is valid.
