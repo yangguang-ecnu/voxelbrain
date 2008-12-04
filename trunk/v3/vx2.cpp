@@ -195,6 +195,7 @@ struct main_module : public gl_wrapper_reciever {
       // glLoadIdentity();
 
       volume.set_projection();
+      crossection.texture.texturing_fastvolume = & volume.vol;
       crossection.draw_box(); //using volume projection
       volume.draw(proj.z());
   

@@ -112,6 +112,8 @@ void slices::draw_box(){
     };
   glEnd();
 
+  DrawSphere(display_center, 30, 20, & texture);
+
   glLineWidth(1.0);
 };
 
