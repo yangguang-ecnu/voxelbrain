@@ -147,8 +147,16 @@ std::string putFile(){
 
 #ifdef LINUX
 //stubs
+int cur = 0;
 std::string getFile(){
-  return "";
+  cur++;
+  if(cur == 1){
+    return "lh.pial";
+  }else if(cur == 2){
+    return "rh.pial";
+  }else{
+    return "";
+  };
 };
 
 std::string putFile(){
