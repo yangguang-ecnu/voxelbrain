@@ -91,6 +91,7 @@ void draw_edges(V3f o, V3f ex, V3f ey, V3f ez, int fl){
 };
 
 void slices::draw_box(){
+  /*
   V3f o(display_center);
   V3f ex = dx*tile_w/zoom;
   V3f ey = dy*tile_h/zoom;
@@ -111,7 +112,7 @@ void slices::draw_box(){
      o += ez;
     };
   glEnd();
-
+  */
   DrawSphere(display_center, 30, 20, & texture);
 
   glLineWidth(1.0);
