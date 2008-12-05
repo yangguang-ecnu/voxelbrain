@@ -4,7 +4,6 @@
 #include "gui.h"
 #include "surface.h" //for read_surface_binary
 #include "v3.h"
-#include <stdio.h>
 #include "gl_wrapper.h"
 #include "gl_points.h"
 #include "v3tools.h"
@@ -13,6 +12,8 @@
 #include "color.h"
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <algorithm>
 
 #ifdef LINUX
 /// artificially adding a dummy local constant to force this thing compile;
@@ -20,6 +21,14 @@
 /// needed for GCC4.1 
 int  __stack_chk_fail_local;
 #endif
+
+
+struct non_anonimous{
+  Surface * surf;
+  V3f z;
+  bool operator() (V3i a, V3i b){ return (z.dot(surf->v[a.x]) > z.dot(surf->v[b.x])); };
+} fucking_shit;
+
 
 ///mouse button
 ///	Callback function called by GLFW when a mouse button is clicked
@@ -101,6 +110,7 @@ struct main_module : public gl_wrapper_reciever {
       printf("Trying to do a key... %d", st.k);
       volume.tool = (st.k - 49);
     };
+
   };
 
   void do_mouse(){
@@ -110,7 +120,7 @@ struct main_module : public gl_wrapper_reciever {
       V3f res;
       //  crossection.tiles_coverage(0.25, 1.0);
       //      crossection.update(volume.vol, volume.cursor, V3f(1,0,0), V3f(0,1,0), V3f(0,0,1)),
-      bool picked = crossection.pick(st.x, st.y, res);
+      bool picked = false;//NO crossection picking. //crossection.pick(st.x, st.y, res);      
       if(picked){
 	crossection.display_center = res;
 	/*	printf("Trying to set the window to %d %d %d !!!\n", (int)volume.cursor.x, 
@@ -126,20 +136,25 @@ struct main_module : public gl_wrapper_reciever {
       render_required = true;
     }
     if(st.m_b==1){ //point something out
-      ///trying to pick crossection
+         ///trying to pick crossection
       V3f res;
       //  crossection.tiles_coverage(0.25, 1.0);
       //      crossection.update(volume.vol, volume.cursor, V3f(1,0,0), V3f(0,1,0), V3f(0,0,1)),
-      bool picked = crossection.pick(st.x, st.y, res);
+      bool picked = false; // not picking anything crossection.pick(st.x, st.y, res);
       if(picked){
 	volume.set_cursor(res);
 	if(volume.tool != 0)crossection.update();
       }else{
-	volume.pick(st.x, st.height-st.y);
-	crossection.display_center = volume.cursor;
-	printf("Trying to set the window to %d %d %d !!!\n", (int)volume.cursor.x, 
+	if(glfwGetKey(GLFW_KEY_LCTRL)==GLFW_PRESS){
+	  crossection.display_center +=(V3f(st.dx, -st.dy, 0)*0.3);
+	}else{
+	  volume.pick(st.x, st.height-st.y);
+	  crossection.display_center = volume.cursor;
+	};
+	/*	printf("Trying to set the window to %d %d %d !!!\n", (int)volume.cursor.x, 
 	       (int)volume.cursor.y, 
 	       (int)volume.cursor.z);
+	*/
 	crossection.update(volume.vol, volume.cursor);
       };
       render_required = true;
@@ -152,8 +167,6 @@ struct main_module : public gl_wrapper_reciever {
     zoomf=1.0f+(0.01f*st.w);
     render_required = true;
   };
-
-
 
   void draw(){
 
@@ -207,10 +220,18 @@ struct main_module : public gl_wrapper_reciever {
       /*
 	Tidying up surface drawing
        */
+      Surface * surf = get_active_surfaces();
+      V3f zaxis = proj.z();
 
-      if(crossection.show_mask){
-	V3f zaxis = proj.z();
-	Surface * surf = get_active_surfaces();
+      float alpha = crossection.show_mask?1.0:0.3;
+
+      //if need transparency, sort the surface
+      if(!crossection.show_mask){
+	fucking_shit.z = proj.z();
+	fucking_shit.surf = surf;
+	sort(surf->tri.begin(), surf->tri.end(), fucking_shit);
+      };
+
 	glEnable (GL_BLEND); 
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBegin(GL_TRIANGLES);
@@ -220,12 +241,15 @@ struct main_module : public gl_wrapper_reciever {
 	    float a = zaxis.dot(surf->n[idx]);
 	    a = a*a*a*a;
 	    if(a < 0.3)a=0.3f;
-	    glColor3f(surf->c[idx].x,surf->c[idx].y,surf->c[idx].z);
+	    if(alpha < 0.9){
+	      glColor4f( 0, 0, 1.0, alpha);
+	    }else{
+	      glColor4f(surf->c[idx].x,surf->c[idx].y,surf->c[idx].z, alpha);
+	    };
 	    glVertex3f( surf->v[idx].x , surf->v[idx].y , surf->v[idx].z );
 	  };
 	};    
 	glEnd();
-      };
 
 
       gui_draw();
