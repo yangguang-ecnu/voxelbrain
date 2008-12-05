@@ -76,7 +76,12 @@ TEST(OGL, TexturedQuad){
 TEST(OGL, TexturedSphere){
   struct: public Drawable, public Textured{
     void Draw(){
-      DrawSphere(V3f(50*sin(0.05*frame_no_), 50*sin(0.07*frame_no_+34), 50*sin(0.03*frame_no_+65)), 30.0f, 60,  
+      glEnable(GL_BLEND);
+      glBlendFunc ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      DrawSphere(V3f(80*sin(0.05*frame_no_), 
+		     80*sin(0.07*frame_no_+34), 
+		     80*sin(0.03*frame_no_+65)+0.1), 
+		 30.0f, 60,  
 		 this);
     };
   } scene;
@@ -86,7 +91,12 @@ TEST(OGL, TexturedSphere){
 TEST(OGL, TexturedFastVolumeSphere){
   struct: public Drawable, public Textured{
     void Draw(){
-      DrawSphere(V3f(50*sin(0.05*frame_no_), 50*sin(0.07*frame_no_+34), 50*sin(0.03*frame_no_+65)), 30.0f, 3,  
+      glEnable(GL_BLEND);
+      glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+      DrawSphere(V3f(80*sin(0.05*frame_no_), 
+		     80*sin(0.07*frame_no_+34), 
+		     80*sin(0.03*frame_no_+65)), 
+		 30.0f, 5,  
 		 this);
     };
   } scene;
@@ -100,3 +110,21 @@ TEST(OGL, TexturedFastVolumeSphere){
   runScene(scene);
 };
 
+
+TEST(OGL, QuadBlending){
+  struct : public Drawable{
+    void Draw(){
+      glEnable(GL_BLEND);
+      glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glBegin(GL_QUADS);
+      glColor4f(1.0f, 0.0f, 0.0f, 0.5f);
+      glVertex3f(100,100,100); //random quad
+      glVertex3f(100,-100,100);
+      glVertex3f(-100,-100,100);
+      glVertex3f(-100, 100,100);
+      glEnd();
+
+    };
+  } scene;
+  runScene(scene);
+};

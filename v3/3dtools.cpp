@@ -33,8 +33,8 @@ void DrawSphere(const V3f & where, float radius, int steps, Textured * t){
   const float da = PI/steps;
   const float db = PI/steps;
   glBegin(GL_QUADS);
-  for(float a = 0; a < 2*PI; a+=da)
-    for(float b = -PI/2; b < PI/2; b+=db){
+    for(float b = -PI/2; b < PI/2; b+=db)
+      for(float a = 0; a < 2*PI; a+=da){
       DrawSphereVertex(a,b,where, radius,t);
       DrawSphereVertex(a,b+db,where, radius,t);
       DrawSphereVertex(a+da,b+db,where, radius,t);
@@ -53,7 +53,7 @@ void DrawSphere(const V3f & where, float radius, int steps, Textured * t){
 
 
 //making compiler shut up; in vain.
-#define BPP 3 
+#define BPP 4 
 #define SIZE 64
 typedef unsigned char * BYTE;
 
@@ -82,15 +82,14 @@ GLuint texname = 0;
 
 void UploadTexture(void * data){
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // our texture colors will replace the untextured colors
-
   // request 1 texture name from OpenGL
   if(!texname)glGenTextures(1, &texname);
   // tell OpenGL we're going to be setting up the texture name it gave us	
   glBindTexture(GL_TEXTURE_3D, texname);	
   // when this texture needs to be shrunk to fit on small polygons, use linear interpolation of the texels to determine the color
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   // when this texture needs to be magnified to fit on a big polygon, use linear interpolation of the texels to determine the color
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   // we want the texture to repeat over the S axis, so if we specify coordinates out of range we still get textured.
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   // same as above for T axis
@@ -100,7 +99,7 @@ void UploadTexture(void * data){
   // this is a 3d texture, level 0 (max detail), GL should store it in RGB8 format, its WIDTHxHEIGHTxDEPTH in size, 
   // it doesnt have a border, we're giving it to GL in RGB format as a series of unsigned bytes, and texels is where the texel data is.
   //  memset(data, 100, SIZE*SIZE*SIZE*BPP);
-  glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB8, SIZE, SIZE, SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+  glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA8, SIZE, SIZE, SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 };
 
 bool UpdateTextured(Textured & t, Range & r){
@@ -123,7 +122,7 @@ bool UpdateTextured(Textured & t, Range & r){
   for(int x = 0; x < SIZE; x++)
     for(int y = 0; y < SIZE; y++)
       for(int z = 0; z < SIZE; z++){
-	V3f cur(c.x+x, c.y+y, c.z+z);
+	V3f cur(c.x+x+128, c.y+y+128, c.z+z+128);
 	if(t.texturing_fastvolume){
 	  //	  if( cur.x > 0 && cur.y > 0 && cur.z > 0 &&
 	  //     cur.x < 255 && cur.y < 255 && cur.z < 255 ){
@@ -134,12 +133,14 @@ bool UpdateTextured(Textured & t, Range & r){
 	  ((BYTE)t.data)[Offset(x,y,z)] = res;
 	  ((BYTE)t.data)[Offset(x,y,z)+1] = res;
 	  ((BYTE)t.data)[Offset(x,y,z)+2] =  res;
-	  
+	  ((BYTE)t.data)[Offset(x,y,z)+3] =  res > 5?250:0;
+	   
 	}else{
 	  bool line_hit = !((int)cur.x % 10) || !((int)cur.y % 10) || !((int)cur.z % 10);
-	  ((BYTE)t.data)[Offset(x,y,z)] = 222;
-	  ((BYTE)t.data)[Offset(x,y,z)+1] = line_hit?100:200;
-	  ((BYTE)t.data)[Offset(x,y,z)+2] =  line_hit?200:100;
+	  ((BYTE)t.data)[Offset(x,y,z)] = line_hit?30:300;
+	  ((BYTE)t.data)[Offset(x,y,z)+1] = line_hit?70:0;
+	  ((BYTE)t.data)[Offset(x,y,z)+2] =  line_hit?300:30;
+	  ((BYTE)t.data)[Offset(x,y,z)+3] =  200;
 	};
       };
   //ready; now load the texture
