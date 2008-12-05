@@ -335,7 +335,8 @@ void analyze_surface(Surface & surf,
     point_property cur_point;
 
     //can do the lookup directly, as well. no hits in quality or performance
-    depth = interpolate_lookup(v, pnt, LOOKUP_DEPTH);
+    //assume we are at 0 level, to work properly with complete data sets.
+    depth = 0.0;//interpolate_lookup(v, pnt, LOOKUP_DEPTH);
 	if(depth > 255.0f)depth=0.0f;
     depth = depth/10.0f;
     cur_point.param[point_property::DEPTH] = depth;
