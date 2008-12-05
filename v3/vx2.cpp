@@ -113,11 +113,11 @@ struct main_module : public gl_wrapper_reciever {
       bool picked = crossection.pick(st.x, st.y, res);
       if(picked){
 	crossection.display_center = res;
-	printf("Trying to set the window to %d %d %d !!!\n", (int)volume.cursor.x, 
+	/*	printf("Trying to set the window to %d %d %d !!!\n", (int)volume.cursor.x, 
 	       (int)volume.cursor.y, 
-	       (int)volume.cursor.z);
+	       (int)volume.cursor.z);*/
 	volume.set_cursor(res);
-	printf("Picked...%f %f %f\n", res.x, res.y, res.z);
+	/*printf("Picked...%f %f %f\n", res.x, res.y, res.z);*/
 	crossection.update();
       }else{
 	float div = (st.width<st.height)?((float)st.width):((float)st.height);
@@ -197,12 +197,37 @@ struct main_module : public gl_wrapper_reciever {
       volume.set_projection();
       crossection.texture.texturing_fastvolume = & volume.vol;
       crossection.draw_box(); //using volume projection
-      volume.draw(proj.z());
+      //volume.draw(proj.z());
   
       /*      if(crossection.update_needed)
 	crossection.update(volume.vol, V3f(-1,-1,-1));
       crossection.draw();
       */
+
+      /*
+	Tidying up surface drawing
+       */
+
+      if(crossection.show_mask){
+	V3f zaxis = proj.z();
+	Surface * surf = get_active_surfaces();
+	glEnable (GL_BLEND); 
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBegin(GL_TRIANGLES);
+	for(vector<V3i>::const_iterator tri = surf->tri.begin(); tri != surf->tri.end(); tri++){
+	  for(int corner = 0; corner < 3; corner++){
+	    int idx = (*tri)[corner];
+	    float a = zaxis.dot(surf->n[idx]);
+	    a = a*a*a*a;
+	    if(a < 0.3)a=0.3f;
+	    glColor3f(surf->c[idx].x,surf->c[idx].y,surf->c[idx].z);
+	    glVertex3f( surf->v[idx].x , surf->v[idx].y , surf->v[idx].z );
+	  };
+	};    
+	glEnd();
+      };
+
+
       gui_draw();
 
       render_required = false;
