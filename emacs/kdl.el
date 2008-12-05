@@ -33,6 +33,7 @@
 (global-set-key "\C-ct" 'toggle-truncate-lines) ; Wrap-unwrap lines
 (global-set-key "\C-cg" 'find-file-at-point) ; Go to whatever is under cursor
 (global-set-key "\C-ck" 'kill-buffer) ; Alternative binding for killing buffer
+(global-set-key "\C-cm" 'transient-mark-mode) ; Transient mark for local undo (COOL)
 
 (setq truncate-partial-width-windows nil) ; Enable wrapping-inwrapping for split buffers.
 
