@@ -1,5 +1,8 @@
+#ifndef KDL_CYGWIN
 #define GLFW_DLL
 #define USE_TW
+#endif
+
 #include "gl_wrapper.h"
 #include <AntTweakBar.h>
 

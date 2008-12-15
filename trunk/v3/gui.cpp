@@ -5,11 +5,14 @@
 
 #include <vector>
 #include <string>
+
+#ifdef USE_ATB
 #include <AntTweakBar.h>
+#endif
 
 struct GuiContainer{
-  GuiContainer(slices * _sl, GlPoints * _pnt);
-  ~GuiContainer();
+  GuiContainer(slices * _sl, GlPoints * _pnt) TW_BODY ;
+  ~GuiContainer() TW_BODY ;
 
   void create(); // populate the container
 
@@ -41,38 +44,38 @@ struct GuiContainer{
 
   /* Helper functions */
 
-  static void TW_CALL get_level(void * value, void * );
-  static void TW_CALL set_level(const void * value, void * );
-  static void TW_CALL load_file( void * );
-  static void TW_CALL test_shape( void * );
-  static void TW_CALL test_button( void * );
-  static void TW_CALL save_file( void * );
-  static void TW_CALL save_file_as( void * );
-  static void TW_CALL load_mask( void * );
-  static void TW_CALL save_mask( void * );
-  static void TW_CALL load_file_truth( void * );
-  static void TW_CALL grow_truth( void * );
-  static void TW_CALL erode_truth( void * );
-  static void TW_CALL apply_truth( void * ); //remove voxels around ground truth
-  static void TW_CALL apply_mask( void * );
-  static void TW_CALL reseed( void * );
-  static void TW_CALL kill_seeds( void * );
-  static void TW_CALL switch_crossections( void * );
-  static void TW_CALL set_band( void * );
-  static void TW_CALL step( void * );
-  static void TW_CALL step_all( void * );
-  static void TW_CALL remove_hanging_pieces( void * );
-  static void TW_CALL undo( void * );
-  static void TW_CALL get_size(void * value, void * );
-  static void TW_CALL set_size(const void * value, void * );
-  static void TW_CALL get_zoom(void * value, void * );
-  static void TW_CALL set_zoom(const void * value, void * );
-  static void TW_CALL get_mask(void * value, void * );
-  static void TW_CALL set_mask(const void * value, void * );
-  static void TW_CALL get_coverage(void * value, void * );
-  static void TW_CALL set_coverage(const void * value, void * );
-  static void TW_CALL get_scheme(void * value, void * );
-  static void TW_CALL set_scheme(const void * value, void * );
+  static void TW_CALL get_level(void * value, void * ) TW_BODY ;
+  static void TW_CALL set_level(const void * value, void * ) TW_BODY ;
+  static void TW_CALL load_file( void * ) TW_BODY ;
+  static void TW_CALL test_shape( void * ) TW_BODY ;
+  static void TW_CALL test_button( void * ) TW_BODY ;
+  static void TW_CALL save_file( void * ) TW_BODY ;
+  static void TW_CALL save_file_as( void * ) TW_BODY ;
+  static void TW_CALL load_mask( void * ) TW_BODY ;
+  static void TW_CALL save_mask( void * ) TW_BODY ;
+  static void TW_CALL load_file_truth( void * ) TW_BODY ;
+  static void TW_CALL grow_truth( void * ) TW_BODY ;
+  static void TW_CALL erode_truth( void * ) TW_BODY ;
+  static void TW_CALL apply_truth( void * ) TW_BODY ; //remove voxels around ground truth
+  static void TW_CALL apply_mask( void * ) TW_BODY ;
+  static void TW_CALL reseed( void * ) TW_BODY ;
+  static void TW_CALL kill_seeds( void * ) TW_BODY ;
+  static void TW_CALL switch_crossections( void * ) TW_BODY ;
+  static void TW_CALL set_band( void * ) TW_BODY ;
+  static void TW_CALL step( void * ) TW_BODY ;
+  static void TW_CALL step_all( void * ) TW_BODY ;
+  static void TW_CALL remove_hanging_pieces( void * ) TW_BODY ;
+  static void TW_CALL undo( void * ) TW_BODY ;
+  static void TW_CALL get_size(void * value, void * ) TW_BODY ;
+  static void TW_CALL set_size(const void * value, void * ) TW_BODY ;
+  static void TW_CALL get_zoom(void * value, void * ) TW_BODY ;
+  static void TW_CALL set_zoom(const void * value, void * ) TW_BODY ;
+  static void TW_CALL get_mask(void * value, void * ) TW_BODY ;
+  static void TW_CALL set_mask(const void * value, void * ) TW_BODY ;
+  static void TW_CALL get_coverage(void * value, void * ) TW_BODY ;
+  static void TW_CALL set_coverage(const void * value, void * ) TW_BODY ;
+  static void TW_CALL get_scheme(void * value, void * ) TW_BODY ;
+  static void TW_CALL set_scheme(const void * value, void * ) TW_BODY ;
 
 
 };
@@ -85,6 +88,8 @@ GuiContainer * the_gui = 0;
 /* declarations for constructor */
 
 /* Constructor */
+
+#ifdef USE_ATB	
 
 GuiContainer::GuiContainer(slices * _sl, GlPoints * _pnt):
   sl(_sl), 
@@ -216,7 +221,7 @@ void GuiContainer::create(){
   TwAddButton(bar, "", test_button, NULL, "group=Testing label='Action'");
 
 
-};
+  };
 
 /* Destructor */
 GuiContainer::~GuiContainer(){
@@ -849,7 +854,7 @@ void set_current_file(std::string in){
   
 };
 
-
+#endif //USE_ATB
 
 
 
