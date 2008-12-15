@@ -1,6 +1,16 @@
 #ifndef __GUI_H__
 #define __GUI_H__
 
+#ifndef KDL_CYGWIN
+#define USE_ATB // AntTweakBar switch
+#endif
+
+#ifndef USE_ATB 
+typedef int TwBar ;
+#define TW_CALL
+#define TW_BODY {} //Substitute dummy bodies when ATB is disabled.
+#endif 
+
 #include "slices.h"
 #include "gl_points.h"
 

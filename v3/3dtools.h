@@ -7,6 +7,8 @@
 #include "v3tools.h" //Range
 #include "fastvolume.h"
 #include "misc.h"
+#include <GL/glfw.h>
+#include <GL/glext.h>
 
 /*
   Simplest interface to OpenGL;

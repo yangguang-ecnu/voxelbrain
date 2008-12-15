@@ -76,7 +76,7 @@ TEST(OGL, TexturedQuad){
 TEST(OGL, TexturedSphere){
   struct: public Drawable, public Textured{
     void Draw(){
-      glEnable(GL_BLEND);
+      glDisable(GL_BLEND);
       glBlendFunc ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       DrawSphere(V3f(80*sin(0.05*frame_no_), 
 		     80*sin(0.07*frame_no_+34), 

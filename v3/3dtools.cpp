@@ -80,7 +80,13 @@ int Offset(int x, int y, int z){
 
 GLuint texname = 0;
 
+PFNGLTEXIMAGE3DPROC glTexImage3D;
+
 void UploadTexture(void * data){
+   glTexImage3D = (PFNGLTEXIMAGE3DPROC) glfwGetProcAddress("glTexImage3D");
+	if (glTexImage3D == NULL)
+		return;
+	
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // our texture colors will replace the untextured colors
   // request 1 texture name from OpenGL
   if(!texname)glGenTextures(1, &texname);

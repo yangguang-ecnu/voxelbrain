@@ -17,7 +17,6 @@ v3tools.o \
 fastvolume.o \
 loader.o \
 gl_points.o \
-gl_wrapper.o \
 slices.o \
 color.o \
 gui.o \
@@ -38,15 +37,18 @@ deps:
 
 #vx2 main build taret.
 vx2: $(VX2_CODE) vx2.o 
-	$(CXX) $(VX2_CODE) vx2.o $(LINKFLAGS) -o vx2
+	$(CXX) $(LINKFLAGS) $(VX2_CODE) vx2.o  -o vx2
 
 #vx2 main build taret.
-tests: $(VX2_CODE) $(VX2_TESTS) tags
+tests: $(VX2_CODE) $(VX2_TESTS) 
 	$(CXX) $(VX2_CODE) $(VX2_TESTS) $(GTEST_STATIC) $(LINKFLAGS) -o tests
 
 tags:
 	etags --declarations *.cpp *.h $(GLFW_INCLUDE)/GL/glfw.h
 
+glfwtest: glfwtest.o
+	$(CXX) glfwtest.o $(LINKFLAGS) -o glfwtest.exe
+	
 clean:
 	rm *.o vx2
 
