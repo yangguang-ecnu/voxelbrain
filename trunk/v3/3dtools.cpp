@@ -80,12 +80,19 @@ int Offset(int x, int y, int z){
 
 GLuint texname = 0;
 
+#define HAS_GL_TEX_IMAGE_3D 
+
+#ifndef HAS_GL_TEX_IMAGE_3D 
 PFNGLTEXIMAGE3DPROC glTexImage3D;
+#endif //HAS_GL_TEX_IMAGE_3D
 
 void UploadTexture(void * data){
+
+#ifndef HAS_GL_TEX_IMAGE_3D
    glTexImage3D = (PFNGLTEXIMAGE3DPROC) glfwGetProcAddress("glTexImage3D");
 	if (glTexImage3D == NULL)
 		return;
+#endif //HAS_GL_TEX_IMAGE_3D
 	
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // our texture colors will replace the untextured colors
   // request 1 texture name from OpenGL
@@ -337,8 +344,38 @@ Intersection & Intersection::is(bool hit_, float distance_){
 };
 
 Intersection & IntersectRayPlane(const Ray & ray, const Ray & plane, Intersection & result){
-	result.is(true, 3);
+  //move origin of plane to 0.
+
+  V3f dist(plane.O-ray.O);
+  float need_to_travel = dist.dot(plane.D); //along plane normal
+  float speed = ray.D.dot(plane.D); //speed of approaching the plane
+  if(speed < 0.001)return result.is(false, 0);
+  result.is(true, dist.dot(plane.D) / ray.D.dot(plane.D));
 };
+
+
+// (ray.start+ray.direction*t - center).length() = radius
 Intersection & IntersectRaySphere(const Ray & ray, const V3f & center, float r, Intersection & result){
-	result.is(true, 3);
+  //move origin of sphere to 0.
+  Ray cur(ray);
+  cur.O -= center;
+  //  (cur.O.x + cur.d.x*t)^2 = cur.O.x*cur.O.x + 2*cur.D.x*cur.O.x*t+cur.D.x*cur.D.x*t*t
+  //total length:
+  //  cur.O.x*cur.O.x + 2*cur.D.x*cur.O.x*t+cur.D.x*cur.D.x*t*t+
+  //  cur.O.y*cur.O.y + 2*cur.D.y*t+cur.D.y*cur.D.y*t*t+
+  //  cur.O.z*cur.O.z + 2*cur.D.z*t+cur.D.z*cur.D.z*t*t
+  //has to be equal to r*r
+  //  cur.O.length2() + 2*sum(cur.D)*t+cur.D.length2()*t*t = r*r
+  //  cur.D.length2()*t*t+2*(cur.D.dot(cur.O))*t+cur.O.length2()-r*r = 0;
+  float a = cur.D.length2();
+  float b = 2*cur.D.dot(cur.O);
+  float c = cur.O.length2()-r*r;
+  float discriminant = b*b-4*a*c;
+  printf("a:%f b:%f c:%f; hence discriminant:%f\n", a, b, c, discriminant);
+  if(discriminant < 0)return result.is(false, 0); 
+  //interested in positive t's
+  float discriminant_root = sqrtf(discriminant);
+  float t1 = (-b + discriminant_root)/(2*a);
+  float t2 = (-b - discriminant_root)/(2*a);
+  return result.is(true, (t1 < t2)?t1:t2);
 };
