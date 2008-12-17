@@ -9,7 +9,9 @@
 typedef int TwBar ;
 #define TW_CALL
 #define TW_BODY {} //Substitute dummy bodies when ATB is disabled.
-#endif 
+#else
+#define TW_BODY
+#endif
 
 #include "slices.h"
 #include "gl_points.h"

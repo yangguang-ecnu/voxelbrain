@@ -18,7 +18,6 @@ bool ContainsRange(const Range &, const Range &);
 bool IntersectsRange(const Range &, const Range &);
 Range & ExpandRange(Range &, const V3f &);
 
-
 ///Rotate a vector along an axis
 V3f rot_x(V3f in, float r);
 V3f rot_y(V3f in, float r);

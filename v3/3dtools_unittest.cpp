@@ -140,4 +140,21 @@ TEST(Intersection, Sphere){
    EXPECT_LT((V3f(1,5,1) - res).length(), EPSILON);
    EXPECT_FALSE(IntersectRaySphere(ray, V3f(0,4,0), 1.0f, pnt).hit);
    EXPECT_TRUE(IntersectRaySphere(ray, V3f(0,4,0), 2.0f, pnt).hit);
+   EXPECT_FLOAT_EQ(2.0f, (ray.Travel(pnt.distance, res)-V3f(0,4,0)).length()); //actually equal to the radius. 
+};
+
+TEST(Intersection, Plane){
+   Ray ray(V3f(1,1,1), V3f(0,1,0));
+   Ray plane(V3f(2, 99, 8), V3f(0,1,0));
+   Ray random_plane(V3f(2, 99, 8), V3f(3.4,1,-2.1));
+   Intersection pnt;
+   V3f res;
+   
+   IntersectRayPlane(ray, plane, pnt);
+   EXPECT_EQ(pnt.hit, true);
+   EXPECT_FLOAT_EQ(99.f, ray.Travel(pnt.distance, res).y);
+   
+   IntersectRayPlane(ray, random_plane, pnt);
+   ray.Travel(pnt.distance, res);
+   EXPECT_GT(0.0001f, (res-random_plane.O).dot(random_plane.D));
 };

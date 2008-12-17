@@ -8,7 +8,7 @@
 #include "fastvolume.h"
 #include "misc.h"
 #include <GL/glfw.h>
-#include <GL/glext.h>
+//#include <GL/glext.h>
 
 /*
   Simplest interface to OpenGL;
