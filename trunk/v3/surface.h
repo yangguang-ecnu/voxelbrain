@@ -2,6 +2,9 @@
 #define __surface_h__
 
 #include <vector>
+#include <map>
+#include <set>
+
 #include <stdio.h>
 
 #include "v3.h"
@@ -25,7 +28,7 @@ struct Surface{
   vector<V3f> n; ///Normals
   vector<V3f> v; ///Vectors (have to be of the same size as normals;  
   vector<V3f> c; ///colors needed for analyzing surface;
-  vector<V3i> tri; ///indices
+  vector<V3i> tri; ///indices;
   vector<V3f> seeds; // where propagation be started should it be needed
 };
 
@@ -73,6 +76,15 @@ void fill_surface(Surface & surf, GlPoints & pnt, const RenderingTraits);
 ///recursive refining function
 
 void refine_triangle(V3f & v0, V3f & v1, V3f & v2, GlPoints & pnt, V3f n, const RenderingTraits &);
+
+typedef int Vertice;
+typedef std::set<Vertice> VerticeSet;
+typedef std::map<Vertice, VerticeSet> Connectivity; 
+
+void Link(Connectivity &, Vertice a, Vertice b);
+void BiLink(Connectivity &, Vertice a, Vertice b);
+
+void Propagate(const Connectivity &, VerticeSet &, int times);
 
 
 #endif // __surface_h__
