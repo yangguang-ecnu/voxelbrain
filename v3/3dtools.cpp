@@ -318,4 +318,27 @@ int runScene(Drawable & scene){
 };
 
 /*
+Intersections.
  */
+
+Ray::Ray(const V3f & from, const V3f & direction): O(from), D(direction){};
+Ray::Ray(const Ray & ray): O(ray.O), D(ray.D){};
+
+/// Extend ray to specified length.
+V3f & Ray::Travel(float distance, V3f & result){
+	result = D; result *= distance; result += O;
+	return result;
+};
+
+//Convinience for setting intersection
+Intersection & Intersection::is(bool hit_, float distance_){
+   hit = hit_; distance = distance_;
+   return *this;
+};
+
+Intersection & IntersectRayPlane(const Ray & ray, const Ray & plane, Intersection & result){
+	result.is(true, 3);
+};
+Intersection & IntersectRaySphere(const Ray & ray, const V3f & center, float r, Intersection & result){
+	result.is(true, 3);
+};

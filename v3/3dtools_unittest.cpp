@@ -128,3 +128,16 @@ TEST(OGL, QuadBlending){
   } scene;
   runScene(scene);
 };
+
+#define EPSILON 0.0001
+
+TEST(Intersection, Sphere){
+   Ray ray(V3f(1,1,1), V3f(0,1,0));
+   Ray travel_test(ray);
+   V3f res;
+   Intersection pnt;
+   travel_test.Travel(4, res);
+   EXPECT_LT((V3f(1,5,1) - res).length(), EPSILON);
+   EXPECT_FALSE(IntersectRaySphere(ray, V3f(0,4,0), 1.0f, pnt).hit);
+   EXPECT_TRUE(IntersectRaySphere(ray, V3f(0,4,0), 2.0f, pnt).hit);
+};

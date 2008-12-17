@@ -73,5 +73,26 @@ const V3f & glVertex3f(const V3f &);
 const V3f & glTexCoord3f(const V3f &);
 const V3f & SetColor(const V3f &);
 
+/*
+  Rays.
+  */
+  
+struct Ray {
+	V3f O; //origin 
+	V3f D; //direction
+	Ray(const V3f &, const V3f &);
+	Ray(const Ray &);
+    V3f & Travel(float distance, V3f & result);
+};
+
+//Intersection information for a given ray.
+struct Intersection{
+	bool hit;
+	float distance;
+    Intersection & is(bool, float);
+};
+
+Intersection & IntersectRayPlane(const Ray & ray, const Ray & plane, Intersection & result);
+Intersection & IntersectRaySphere(const Ray & ray, const V3f & center, float r, Intersection & result);
 
 #endif // __3dtools_h__
