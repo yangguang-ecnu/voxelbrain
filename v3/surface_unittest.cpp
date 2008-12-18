@@ -70,17 +70,18 @@ TEST(Connectivity, Link){
 TEST(Connectivity, Propagate){
   Connectivity net;
   Connectivity net_wide;
-  VerticeSet result; result.push_back(0);
-  VerticeSet result_wide; result_wide.push_back(0);
+  VerticeSet result; result.insert(0);
+  VerticeSet result_wide; result_wide.insert(0);
 
   //Linking up a couple of degenerative networks.
+
   for(int i = 0; i < 10; i++){
     BiLink(net, i, i+1);
     BiLink(net_wide, 0, i);
   };
 
   Propagate(net, result, 1);
-  Propagate(net_wide, result, 1);
+  Propagate(net_wide, result_wide, 1);
   EXPECT_EQ(2, result.size());
   EXPECT_EQ(10, result_wide.size());
   Propagate(net, result, 3);
