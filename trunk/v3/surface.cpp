@@ -458,11 +458,11 @@ void unmark(Surface & in, V3f where, float radius){
 void Link(Connectivity & net, Vertice a, Vertice b){
   Connectivity::iterator neighbours = net.find(a);
   if(net.end() == neighbours){
-    VerticeSet brand_new; brand_new.push_back(b);
+    VerticeSet brand_new; brand_new.insert(b);
     net[a] = brand_new;
     return;
   };
-  (*neighbours).second.push_back(b);
+  (*neighbours).second.insert(b);
 };
 
 void BiLink(Connectivity & net, Vertice a, Vertice b){
@@ -478,8 +478,8 @@ void Propagate(const Connectivity & net, VerticeSet & current, int times){
     //each point
     for(VerticeSet::iterator cur_a = border.begin(); cur_a != border.end(); cur_a++){
       //each neighbour of the point
-      for(VerticeSet::iterator cur_b = net[*cur_a].second.begin(); 
-	  cur_b != net[*cur_a].second.end(); cur_b++){
+      for(VerticeSet::const_iterator cur_b = net.find(*cur_a)->second.begin(); 
+	  cur_b != net.find(*cur_a)->second.end(); cur_b++){
 	if(current.find(*cur_b) == current.end()){
 	  new_border.insert(*cur_b);
 	  current.insert(*cur_b);
