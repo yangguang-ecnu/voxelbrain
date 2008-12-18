@@ -37,6 +37,28 @@
 
 (setq truncate-partial-width-windows nil) ; Enable wrapping-inwrapping for split buffers.
 
+;;cygwin setup
+
+;; tweaks for cygwin; can be enabled manually, some trickery for 
+;; automatic enableing provided.
+
+(defun cygwin()
+  "Make default shell to be bash"
+  (interactive)
+  (setq shell-file-name "bash")
+  (setq shell-command-switch "-c")      ; SHOULD IT BE (setq shell-command-switch "-ic")?
+  (setq explicit-shell-file-name "bash")
+  (setenv "SHELL" explicit-shell-file-name)
+  (setq w32-quote-process-args ?\"))
+
+(if
+    (or
+     (file-exists-p "c:/bin/bash.exe")
+     (file-exists-p "c:/cygwin/bin/bash.exe"))
+    (progn
+      (cygwin)))
+
+
 ;; function for customizing
 (defun kdl () 
   "open kdl.el"
