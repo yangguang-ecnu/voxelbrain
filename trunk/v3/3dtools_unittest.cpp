@@ -46,6 +46,20 @@ TEST(OGL, Sphere){
   runScene(scene);
 };
 
+TEST(OGL, Surface){
+  
+  struct: public Drawable{
+    Surface surf;
+    void Draw(){
+      DrawSurface( surf );
+    };
+  } scene; 
+
+  //Load the triangle data
+  EXPECT_TRUE(read_surface_binary(scene.surf, "lh.pial"));
+  runScene(scene);  
+
+};
 
 TEST(OGL, TexturedQuad){
   struct TexturedScene: public Drawable, public Textured {
@@ -158,3 +172,4 @@ TEST(Intersection, Plane){
    ray.Travel(pnt.distance, res);
    EXPECT_GT(0.0001f, (res-random_plane.O).dot(random_plane.D));
 };
+

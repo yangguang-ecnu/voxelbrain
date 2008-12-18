@@ -45,6 +45,18 @@ void DrawSphere(const V3f & where, float radius, int steps, Textured * t){
 
 };
 
+//Draw every triangle of the surface
+void DrawSurface( const Surface & surf){
+  glBegin(GL_TRIANGLES);
+  glColor3f(0,1,0);
+  for(vector<V3i>::const_iterator i = surf.tri.begin(); i != surf.tri.end(); i++){
+    for(int vertex = 0; vertex < 3; vertex++){ //Each verex of a face
+      // glColor3f(surf.c[(*i)[vertex]]);
+      glVertex3f(surf.v[(*i)[vertex]]-V3f(128,128,128));
+    }; //Each vertex of a face
+  }; //Each face
+  glEnd();
+};
 
 
 /*
@@ -80,7 +92,9 @@ int Offset(int x, int y, int z){
 
 GLuint texname = 0;
 
+#ifndef KDL_CYGWIN
 #define HAS_GL_TEX_IMAGE_3D 
+#endif
 
 #ifndef HAS_GL_TEX_IMAGE_3D 
 PFNGLTEXIMAGE3DPROC glTexImage3D;
@@ -191,6 +205,10 @@ const V3f & Textured::SetTexture(const V3f & where){
 /*
   Conviniences.
 */
+
+const V3f & glColor3f(const V3f & v){
+  glColor3f(v.x, v.y, v.z); return v;
+};
 
 const V3f & glVertex3f(const V3f & v){
   glVertex3f(v.x, v.y, v.z); return v;
