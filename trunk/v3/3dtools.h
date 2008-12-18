@@ -1,4 +1,5 @@
-// 3D visualization tools.
+// 3D visualization tools and functions for dealing with 3D.
+
 
 #ifndef __3dtools_h__
 #define __3dtools_h__
