@@ -7,10 +7,13 @@
 #include "v3.h"
 #include "v3tools.h" //Range
 #include "fastvolume.h"
+#include "surface.h"
 #include "misc.h"
 #include <GL/glfw.h>
-//#include <GL/glext.h>
 
+#ifdef KDL_CYGWIN
+#include <GL/glext.h>
+#endif
 /*
   Simplest interface to OpenGL;
 */
@@ -62,6 +65,7 @@ class Textured: public Validatable {
 */
 
 void DrawSphere(const V3f & where, float radius, int steps = 6, Textured * t = NULL);
+void DrawSurface(const Surface & surf);
 
 
 int runScene(Drawable &);
@@ -71,6 +75,7 @@ int runScene(Drawable &);
  */
 
 const V3f & glVertex3f(const V3f &);
+const V3f & glColor3f(const V3f &);
 const V3f & glTexCoord3f(const V3f &);
 const V3f & SetColor(const V3f &);
 

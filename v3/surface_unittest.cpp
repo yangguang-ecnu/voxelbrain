@@ -85,6 +85,25 @@ TEST(Connectivity, Propagate){
   EXPECT_EQ(2, result.size());
   EXPECT_EQ(10, result_wide.size());
   Propagate(net, result, 3);
-  EXPECT_EQ(5, result.size());
+  EXPECT_EQ(5, result.size());  
+};
+
+TEST(Connectivity, RealMesh){
+  Surface surf;
+  Connectivity net;
+  EXPECT_TRUE(read_surface_binary(surf, "lh.pial"));
+  EXPECT_EQ(152897, surf.v.size());
+  for(int i = 0; i < surf.tri.size(); i++){
+    Link(net, surf.tri[i].x, surf.tri[i].y);
+    Link(net, surf.tri[i].y, surf.tri[i].z);
+    Link(net, surf.tri[i].z, surf.tri[i].x);
+  };
+
+  VerticeSet test; test.insert(3); //Let's say; start with the third point;
   
+  Propagate(net, test, 1); //Do one step; 
+  EXPECT_EQ(4, test.size());
+
+  Propagate(net, test, 10000); //Do one step; 
+  EXPECT_EQ(4, test.size());
 };
