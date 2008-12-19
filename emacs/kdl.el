@@ -14,9 +14,25 @@
 
 (tool-bar-mode 0) ; Disable toolbars and menubars for real estate.
 (menu-bar-mode 0)
+(toggle-scroll-bar)
 
-(if (x-list-fonts "6x10")
-    (set-default-font "6x10"))
+;try fonts.
+(defun try-font (x)
+  "Try if a certain font fits"
+  (if (x-list-fonts x)
+      (set-default-font x)))
+
+(defun try-font-list (l)
+  (let 
+      ((to-try (car l))
+       (next (cdr l)))
+    (message (concat "Trying" to-try))
+    (try-font (car l))
+    (if next (try-font-list next))))
+
+(try-font-list '("6x10" 
+       "-raster-MS Serif-normal-r-normal-normal-8-60-96-96-p-*-iso8859-1"))
+
 
 ;;Interactive buffers, from http://www.emacswiki.org/emacs-en/InteractivelyDoThings#toc6.
 (require 'ido)
