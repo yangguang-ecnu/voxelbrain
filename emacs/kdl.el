@@ -14,6 +14,7 @@
 
 (tool-bar-mode 0) ; Disable toolbars and menubars for real estate.
 (menu-bar-mode 0)
+;; Hopfully not enabled yet.
 (toggle-scroll-bar)
 
 ;try fonts.
@@ -50,6 +51,14 @@
 (global-set-key "\C-cg" 'find-file-at-point) ; Go to whatever is under cursor
 (global-set-key "\C-ck" 'kill-buffer) ; Alternative binding for killing buffer
 (global-set-key "\C-cm" 'transient-mark-mode) ; Transient mark for local undo (COOL)
+(global-set-key "\C-cf" 'follow-mode) ; Enable follow mode. 
+
+(defun follow-mode-kludge() 
+  "Enable c-mode at the same time"
+  (interactive)
+  (c-mode)
+  (follow-mode))
+(global-set-key "\C-cF" 'follow-mode-kludge) ; Enable follow mode. 
 
 (setq truncate-partial-width-windows nil) ; Enable wrapping-inwrapping for split buffers.
 
@@ -80,6 +89,12 @@
   "open kdl.el"
   (interactive)
   (find-file "~/.emacs.d/kdl.el"))
+
+;; Dvorak.
+(defun dvorak ()
+  "play with dvorak layout"
+  (interactive)
+  (find-file "~/.emacs.d/dvorak.txt"))
 
 ;;scratch stuff
 (defun kdlt () 
