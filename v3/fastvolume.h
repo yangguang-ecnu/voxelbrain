@@ -32,20 +32,20 @@ class FastVolume {
   bool updated;
   /* Storage item */
   typedef short int t_vox; 
+ /* Main storage; won't fit on stack */
+  t_vox * vol;
+  unsigned char * mask;
+  unsigned char * depth;
 
   /* Constructor/Destructor */
   FastVolume();
   ~FastVolume();
   
- /* Main storage; won't fit on stack */
-  t_vox * vol;
 
   ///markers
   std::vector<int> markers;
   std::vector<int> plane;
 
-  unsigned char * mask;
-  unsigned char * depth;
   //void add_point(V3f &in); use tool
   void propagate(int threshold, int amount, int depth, int times);
   void propagate_spread(int threshold, int amount, int depth, int times);
@@ -147,6 +147,8 @@ class FastVolume {
 
   void Set(int x, int y, int z, short data);
   short Get( int x, int y, int z) const;
+
+
 
 };
 
