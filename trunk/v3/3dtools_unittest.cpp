@@ -143,6 +143,20 @@ TEST(OGL, QuadBlending){
   runScene(scene);
 };
 
+/*
+  //Now every scene got a camera.
+*/
+TEST(OGL, Camera){
+
+  struct: public Drawable{
+    void Draw(){
+      DrawSphere( V3f(0,0,0), 30.0f);
+    };
+  } scene; 
+
+  runScene(scene);
+};
+
 #define EPSILON 0.0001
 
 TEST(Intersection, Sphere){
@@ -172,4 +186,3 @@ TEST(Intersection, Plane){
    ray.Travel(pnt.distance, res);
    EXPECT_GT(0.0001f, (res-random_plane.O).dot(random_plane.D));
 };
-

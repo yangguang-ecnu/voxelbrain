@@ -2,6 +2,7 @@
 #define GLFW_DLL
 #include "GL/glfw.h"
 #include "color.h"
+#include "3dtools.h"
 
 void slices::free_store(){
   for(int i = 0; i < xn*yn; i++)delete tiles[i];
@@ -90,7 +91,7 @@ void draw_edges(V3f o, V3f ex, V3f ey, V3f ez, int fl){
   };
 };
 
-void slices::draw_box(){
+void slices::draw_box( V3f box_normal){
   /*
   V3f o(display_center);
   V3f ex = dx*tile_w/zoom;
@@ -113,8 +114,54 @@ void slices::draw_box(){
     };
   glEnd();
   */
-  DrawSphere(display_center, 30, 20, & texture);
 
+  
+  V3f o(display_center);
+  box_normal /= box_normal.length();
+  V3f up = V3f(1.0, 0.04, 0.1); 
+  V3f side; side.cross(up, box_normal);
+  up.cross(side, box_normal);
+  side /= side.length();
+  up /= up.length();
+  
+  side*=20;
+  up*=20;
+
+  V3f a(o+side+up);
+  V3f b(o+side-up);
+  V3f c(o-side-up);
+  V3f d(o-side+up);
+
+  Range cur(o+V3f(-30,-30,-30), o+V3f(30,30,30));
+
+  //Range cur(c,b); ExpandRange(cur,c); ExpandRange(cur, d);
+  
+ texture.CheckTexture(cur);
+
+ glColor3f(1,0,0);
+  glLineWidth(2.0);
+  glBegin(GL_LINES);
+  glVertex3f(a);glVertex3f(b);
+  glVertex3f(c);glVertex3f(b);
+  glVertex3f(c);glVertex3f(d);
+  glVertex3f(a);glVertex3f(d);
+  glEnd();
+
+  glEnable(GL_TEXTURE_3D);
+   
+  glBegin(GL_QUADS);
+  glColor3f(1.0f, 0.0f, 0.0f);
+  glVertex3f(texture.SetTexture(a)); 
+  glVertex3f(texture.SetTexture(b)); 
+  glVertex3f(texture.SetTexture(c)); 
+  glVertex3f(texture.SetTexture(d)); 
+  glEnd();
+ 
+  glDisable(GL_TEXTURE_3D);
+
+  /*
+  DrawSphere(display_center, 30, 20, & texture);
+  */
   glLineWidth(1.0);
 };
 
@@ -139,9 +186,9 @@ void slices::draw(){
   int x; int y; int cs = 10*zoom;
   
   locate(pnts->cursor, x, y);
-  printf("Setting cursor at %f %f %f, getting %d %d\n", pnts->cursor.x, 
+  /*  printf("Setting cursor at %f %f %f, getting %d %d\n", pnts->cursor.x, 
 	 pnts->cursor.y,
-	 pnts->cursor.z, x, y);
+	 pnts->cursor.z, x, y); */
   locate(center, x, y);
   
   glDisable(GL_DEPTH_TEST);

@@ -27,7 +27,7 @@ struct non_anonimous{
   Surface * surf;
   V3f z;
   bool operator() (V3i a, V3i b){ return (z.dot(surf->v[a.x]) > z.dot(surf->v[b.x])); };
-} fucking_shit;
+} tri_sorter;
 
 
 ///mouse button
@@ -41,10 +41,14 @@ struct main_module : public gl_wrapper_reciever {
 
   GlPoints volume;
 
+  V3f mesh_offset;
+
+  V3f slice_direction;
+
   float zoomf;
   
 
-  main_module():crossection(& volume){
+  main_module():mesh_offset(V3f( 0, 0, 0)), slice_direction(1,2,3), crossection(& volume){
     render_required = true;
     zoomf = 1.0;
   };
@@ -102,6 +106,13 @@ struct main_module : public gl_wrapper_reciever {
     printf("resz: w:%d; h:%d\n", st.width, st.height);
     crossection.resize_screen(st.width, st.height);
     //  crossection.tiles_coverage(0.25, 1.0);
+    /*RenderingTraits t;
+    t.inside = false;
+    t.tru = true;
+    t.half = false;
+    
+    rasterize_surface(* surf, volume, t); //how to render
+    */
     crossection.update(volume.vol, volume.cursor);//, V3f(1,0,0), V3f(0,1,0), V3f(0,0,1));
     
   };
@@ -109,6 +120,9 @@ struct main_module : public gl_wrapper_reciever {
     if(st.k >= 49 && st.k <= 54){
       printf("Trying to do a key... %d", st.k);
       volume.tool = (st.k - 49);
+    };
+
+    if(glfwGetKey(GLFW_KEY_UP)==GLFW_PRESS){
     };
 
   };
@@ -139,14 +153,27 @@ struct main_module : public gl_wrapper_reciever {
          ///trying to pick crossection
       V3f res;
       //  crossection.tiles_coverage(0.25, 1.0);
-      //      crossection.update(volume.vol, volume.cursor, V3f(1,0,0), V3f(0,1,0), V3f(0,0,1)),
+      //  crossection.update(volume.vol, volume.cursor, V3f(1,0,0), V3f(0,1,0), V3f(0,0,1)),
       bool picked = false; // not picking anything crossection.pick(st.x, st.y, res);
       if(picked){
 	volume.set_cursor(res);
 	if(volume.tool != 0)crossection.update();
       }else{
 	if(glfwGetKey(GLFW_KEY_LCTRL)==GLFW_PRESS){
-	  crossection.display_center +=(V3f(st.dx, -st.dy, 0)*0.3);
+	  slice_direction = rot_x(slice_direction, 0.02*st.dx);
+	  slice_direction = rot_y(slice_direction, 0.02*st.dy);
+	  //	  crossection.display_center +=(V3f(st.dx, -st.dy, 0)*0.3);
+	}else if(glfwGetKey(GLFW_KEY_RCTRL)==GLFW_PRESS){
+	  mesh_offset += (glfwGetKey(GLFW_KEY_RSHIFT)==GLFW_PRESS)?(V3f(st.dx, -st.dy, 0)*0.3):(V3f(st.dx, 0, -st.dy)*0.3);
+	  Surface * surf = get_active_surfaces(); surf->offset = mesh_offset;
+	  
+	  //Rasterizing surfaces:
+	  //RenderingTraits t;
+	  //analyze_surface( *surf, volume );
+	  //rasterize_surface( *surf, volume, t);
+
+	  //	  for(vector<V3f>::iterator vv = surf->v.begin(); vv != surf->v.end(); vv++)(*vv)+=dv;
+
 	}else{
 	  volume.pick(st.x, st.height-st.y);
 	  crossection.display_center = volume.cursor;
@@ -209,54 +236,70 @@ struct main_module : public gl_wrapper_reciever {
 
       volume.set_projection();
       crossection.texture.texturing_fastvolume = & volume.vol;
-      crossection.draw_box(); //using volume projection
-      //volume.draw(proj.z());
+      if(volume.tw_transparency > 0.5){
+	volume.draw(proj.z());
+      };
   
-      /*      if(crossection.update_needed)
-	crossection.update(volume.vol, V3f(-1,-1,-1));
-      crossection.draw();
-      */
+      
 
       /*
 	Tidying up surface drawing
        */
       Surface * surf = get_active_surfaces();
-      V3f zaxis = proj.z();
-
-      float alpha = crossection.show_mask?1.0:0.3;
+      V3f zaxis = proj.z(); zaxis += V3f(0.1, 0.2, 0.2); zaxis /= zaxis.length();
+      float alpha = (crossection.show_mask)?1.0:0.3; 
 
       //if need transparency, sort the surface
       if(!crossection.show_mask){
-	fucking_shit.z = proj.z();
-	fucking_shit.surf = surf;
-	sort(surf->tri.begin(), surf->tri.end(), fucking_shit);
+	tri_sorter.z = proj.z();
+	tri_sorter.surf = surf;
+	sort(surf->tri.begin(), surf->tri.end(), tri_sorter);	
+      }else{
       };
 
-	glEnable (GL_BLEND); 
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glBegin(GL_TRIANGLES);
-	for(vector<V3i>::const_iterator tri = surf->tri.begin(); tri != surf->tri.end(); tri++){
-	  for(int corner = 0; corner < 3; corner++){
-	    int idx = (*tri)[corner];
-	    float a = zaxis.dot(surf->n[idx]);
-	    a = a*a*a*a;
-	    if(a < 0.3)a=0.3f;
-	    if(alpha < 0.9){
-	      glColor4f( 0, 0, 1.0, alpha);
-	    }else{
-	      glColor4f(surf->c[idx].x,surf->c[idx].y,surf->c[idx].z, alpha);
-	    };
-	    glVertex3f( surf->v[idx].x , surf->v[idx].y , surf->v[idx].z );
+      glEnable (GL_BLEND); 
+      glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+      //draw box first if the surface is transparent
+      if(alpha < 0.9) crossection.draw_box(slice_direction);
+      
+      glBegin(GL_TRIANGLES);
+      for(vector<V3i>::const_iterator tri = surf->tri.begin(); tri != surf->tri.end(); tri++){
+	for(int corner = 0; corner < 3; corner++){
+	  int idx = (*tri)[corner];
+	  float a = (zaxis).dot(surf->n[idx]);
+	  a = a*a*a*a;
+	  float depth = volume.vol.depth[volume.vol.getOffset(surf->v[idx].x, 
+							      surf->v[idx].y, 
+							      surf->v[idx].z)];
+	  if(depth > 10)depth = 10;
+	  depth /= 20; depth = 1;
+	  if(a < 0.3)a=0.3f; a*=0.5;
+ 	  if(alpha < 0.9){
+	    glColor4f( 0, 0, 1.0, alpha);
+	  }else{
+	    glColor4f((a*depth+0.3*surf->c[idx].x),
+		      (a*depth+0.3*surf->c[idx].y),
+		      (a*depth+0.3*surf->c[idx].z), alpha);
 	  };
-	};    
-	glEnd();
 
-
+	  V3f to_render = surf->v[idx] + mesh_offset;
+	  glVertex3f( to_render );
+	};
+      };    
+      glEnd();
+      
+      crossection.draw_box(slice_direction); //using volume projection
+      
+      
+      if(crossection.update_needed)
+	crossection.update(volume.vol, V3f(-1,-1,-1));
+      //      crossection.draw();
       gui_draw();
-
+      
       render_required = false;
       st.interface_updated = false;
-	  glfwSwapBuffers(); //definitely did this before; check GIT...
+      glfwSwapBuffers(); //definitely did this before; check GIT...
     }else{
       //do nothing; 
     };

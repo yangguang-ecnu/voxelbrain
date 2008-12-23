@@ -3,6 +3,9 @@
 
 #include <algorithm>
 
+/*
+  Offsets to get at the neighbouring points.
+ */
 const int FastVolume::neighbours[26] = {
   dx, -dx, dy, -dy, dz, -dz,
   dx+dy, dx-dy, dy-dx, -dy-dx,
@@ -18,6 +21,9 @@ const int FastVolume::neighbours[26] = {
   -dx-dy-dz
 };
 
+/*
+  Indices of the corners of a cube.
+ */
 const int FastVolume::corners[8] = {
   0,  dx,      dy,      dx+dy, 
   dz, dx + dz, dy + dz, dx+dy + dz };

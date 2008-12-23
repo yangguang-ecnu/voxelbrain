@@ -24,6 +24,11 @@ void clear(Surface & in){
   in.seeds.clear();
 };
 
+/* Surface constructor */
+
+Surface::Surface() : offset(V3f(0,0,0)) {};
+  
+
 
 bool ReadPialHeader(Io & data, int * vertices, int * triangles){
 
@@ -409,9 +414,9 @@ void rasterize_surface(Surface & surf,
   for(vector<V3i>::const_iterator i = surf.tri.begin(); 
       i != surf.tri.end(); i++){
 
-    V3f a(surf.v[i->x]);
-    V3f b(surf.v[i->y]);
-    V3f c(surf.v[i->z]);
+    V3f a(surf.v[i->x]+surf.offset);
+    V3f b(surf.v[i->y]+surf.offset);
+    V3f c(surf.v[i->z]+surf.offset);
     /*
     printf("Rendering...\n");
     for(int h = 0; h < 3; h++)

@@ -30,6 +30,10 @@ struct Surface{
   vector<V3f> c; ///colors needed for analyzing surface;
   vector<V3i> tri; ///indices;
   vector<V3f> seeds; // where propagation be started should it be needed
+
+  V3f offset;
+  
+  Surface(); 
 };
 
 Surface * get_active_surfaces();
