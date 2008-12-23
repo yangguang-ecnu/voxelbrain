@@ -55,10 +55,25 @@ class Textured: public Validatable {
   //export to common Texture
   void * data;
   int size;
+
 };
 
+/*
+  The idea is to provide each drawable with its own transform.
+  ATM, camera is a standalone class to try out the technique.
+  We are going to make it easy to transform it into the universal 
+  solution.
+ */
 
+class Camera: public Drawable{
+ public:
+  Camera(Drawable &);
+  void Draw ();
+  
+  Drawable & scene;
+};
 
+/* Simple helper functions. */
 
 /*
   Draw unit spheres.
@@ -66,7 +81,6 @@ class Textured: public Validatable {
 
 void DrawSphere(const V3f & where, float radius, int steps = 6, Textured * t = NULL);
 void DrawSurface(const Surface & surf);
-
 
 int runScene(Drawable &);
 

@@ -54,7 +54,7 @@ struct slices{
   void update(FastVolume & in);
   void update(){update_needed = true;};
   void draw();
-  void draw_box();
+  void draw_box(V3f);
   void setup_projection();
   void resize_all(int _width, int _height, int _tile_w, int _tile_h);
   void resize_screen(int _width, int _height);

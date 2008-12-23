@@ -12,8 +12,14 @@
   b: [-PI/2..PI/2].
  */
 
-void DrawSphereVertex(float a, float b, const V3f & where, float radius, Textured * t){
-  V3f pos(where); pos += V3f(cos(b)*sin(a)*radius, cos(b)*cos(a)*radius, sin(b)*radius);
+void DrawSphereVertex(float a, 
+		      float b, 
+		      const V3f & where, 
+		      float radius, Textured * t){
+  V3f pos(where); pos += 
+		    V3f(cos(b)*sin(a)*radius, 
+			cos(b)*cos(a)*radius, 
+			sin(b)*radius);
   if(t){
     t->SetTexture(pos);
   }else{
@@ -22,7 +28,10 @@ void DrawSphereVertex(float a, float b, const V3f & where, float radius, Texture
     glVertex3f(pos);
 };
 
-void DrawSphere(const V3f & where, float radius, int steps, Textured * t){
+void DrawSphere(const V3f & where, 
+		float radius, 
+		int steps, 
+		Textured * t){
    glEnable(GL_TEXTURE_3D);
   if(t){ //Ensure we are in the proper place
     V3f diagonal(radius, radius, radius);
@@ -108,25 +117,57 @@ void UploadTexture(void * data){
 		return;
 #endif //HAS_GL_TEX_IMAGE_3D
 	
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // our texture colors will replace the untextured colors
+  glTexEnvi(GL_TEXTURE_ENV, 
+	    GL_TEXTURE_ENV_MODE, 
+	    GL_REPLACE); // our texture colors will replace the untextured colors
   // request 1 texture name from OpenGL
   if(!texname)glGenTextures(1, &texname);
-  // tell OpenGL we're going to be setting up the texture name it gave us	
+  
+  // tell OpenGL we're going to be setting up the 
+  //texture name it gave us	
   glBindTexture(GL_TEXTURE_3D, texname);	
-  // when this texture needs to be shrunk to fit on small polygons, use linear interpolation of the texels to determine the color
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  // when this texture needs to be magnified to fit on a big polygon, use linear interpolation of the texels to determine the color
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  // we want the texture to repeat over the S axis, so if we specify coordinates out of range we still get textured.
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  
+  // when this texture needs to be shrunk 
+  //to fit on small polygons, use linear 
+  //interpolation of the texels to determine the color
+  glTexParameteri(GL_TEXTURE_3D, 
+		  GL_TEXTURE_MIN_FILTER, 
+		  GL_LINEAR);//GL_NEAREST);
+
+  // when this texture needs to be magnified to fit on 
+  //a big polygon, use linear interpolation of the texels 
+  //to determine the color
+  glTexParameteri(GL_TEXTURE_3D, 
+		  GL_TEXTURE_MAG_FILTER, 
+		  GL_LINEAR);//GL_NEAREST);
+
+  // we want the texture to repeat over the S axis, 
+  //so if we specify coordinates out of range 
+  //we still get textured.
+  glTexParameteri(GL_TEXTURE_3D, 
+		  GL_TEXTURE_WRAP_S, 
+		  GL_REPEAT);
+
   // same as above for T axis
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_3D, 
+		  GL_TEXTURE_WRAP_T, 
+		  GL_REPEAT);
+
   // same as above for R axis
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
-  // this is a 3d texture, level 0 (max detail), GL should store it in RGB8 format, its WIDTHxHEIGHTxDEPTH in size, 
-  // it doesnt have a border, we're giving it to GL in RGB format as a series of unsigned bytes, and texels is where the texel data is.
+  glTexParameteri(GL_TEXTURE_3D, 
+		  GL_TEXTURE_WRAP_R, 
+		  GL_REPEAT);
+  // this is a 3d texture, level 0 (max detail), 
+  //GL should store it in RGB8 format, 
+  //its WIDTHxHEIGHTxDEPTH in size, 
+  // it doesnt have a border, we're giving it to 
+  //GL in RGB format as a series of unsigned bytes, 
+  // and texels is where the texel data is.
   //  memset(data, 100, SIZE*SIZE*SIZE*BPP);
-  glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA8, SIZE, SIZE, SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+  glTexImage3D(GL_TEXTURE_3D, 0, 
+	       GL_RGBA8, 
+	       SIZE, SIZE, SIZE, 0, 
+	       GL_RGBA, GL_UNSIGNED_BYTE, data);
 };
 
 bool UpdateTextured(Textured & t, Range & r){
@@ -138,9 +179,11 @@ bool UpdateTextured(Textured & t, Range & r){
   center.z = floorf(center.z);
 
   V3f half_diagonal(SIZE/2, SIZE/2, SIZE/2);
-  t.current_range = Range(center-half_diagonal, center+half_diagonal);
+  t.current_range = Range(center-half_diagonal, 
+			  center+half_diagonal);
   
-  //fill it with a dummy texture for now (maybe better done with an external class
+  //fill it with a dummy texture for now (maybe 
+  //better done with an external class
   Range fast_volume_range(V3f(0,0,0), V3f(255,255,255));
 
   unsigned char res;
@@ -149,24 +192,25 @@ bool UpdateTextured(Textured & t, Range & r){
   for(int x = 0; x < SIZE; x++)
     for(int y = 0; y < SIZE; y++)
       for(int z = 0; z < SIZE; z++){
-	V3f cur(c.x+x+128, c.y+y+128, c.z+z+128);
+	V3f cur(c.x+x, c.y+y, c.z+z);
 	if(t.texturing_fastvolume){
-	  //	  if( cur.x > 0 && cur.y > 0 && cur.z > 0 &&
-	  //     cur.x < 255 && cur.y < 255 && cur.z < 255 ){
-	  res = (unsigned char)t.texturing_fastvolume->Sample((int)cur.x%255, (int)cur.y%255, (int)cur.z%255);
-	    //}else{
-	    //  res = 0;
-	    //};
+	  res = 
+	    (unsigned char)t.texturing_fastvolume->\
+	    Sample((int)cur.x%255, 
+		   (int)cur.y%255, 
+		   (int)cur.z%255);
 	  ((BYTE)t.data)[Offset(x,y,z)] = res;
 	  ((BYTE)t.data)[Offset(x,y,z)+1] = res;
 	  ((BYTE)t.data)[Offset(x,y,z)+2] =  res;
-	  ((BYTE)t.data)[Offset(x,y,z)+3] =  res > 5?250:0;
-	   
+	  ((BYTE)t.data)[Offset(x,y,z)+3] =  255;
 	}else{
-	  bool line_hit = !((int)cur.x % 10) || !((int)cur.y % 10) || !((int)cur.z % 10);
+	  bool line_hit = 
+	    !((int)cur.x % 10) || 
+	    !((int)cur.y % 10) || 
+	    !((int)cur.z % 10);
 	  ((BYTE)t.data)[Offset(x,y,z)] = line_hit?30:300;
-	  ((BYTE)t.data)[Offset(x,y,z)+1] = line_hit?70:0;
-	  ((BYTE)t.data)[Offset(x,y,z)+2] =  line_hit?300:30;
+	  ((BYTE)t.data)[Offset(x,y,z)+1] =line_hit?70:0;
+	  ((BYTE)t.data)[Offset(x,y,z)+2] =line_hit?300:30;
 	  ((BYTE)t.data)[Offset(x,y,z)+3] =  200;
 	};
       };
@@ -196,11 +240,31 @@ bool Textured::CheckTexture(Range & r){
 
 
 const V3f & Textured::SetTexture(const V3f & where){
-  V3f pos = (where - current_range.min)/SIZE; //calculating the 0..1 range
+  //calculating the 0..1 range
+  V3f pos = (where - current_range.min)/SIZE; 
   glTexCoord3f(pos);
   return where;
 };
 
+/*
+  Camera object.
+*/
+
+Camera::Camera(Drawable & in): scene(in){};
+
+/*
+  Try a dummy camera implementation first.
+ */
+int frame_no;
+
+void Camera::Draw(){
+  frame_no++;
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glRotatef(0.9*frame_no,0,1,0);
+  scene.Draw();
+  glPopMatrix();
+};
 
 /*
   Conviniences.
@@ -240,7 +304,9 @@ int setupProjection(){
   float zoomf = 1.0f;
   
   glClearColor(1.0,1.0,1.0, 1.0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | 
+	  GL_DEPTH_BUFFER_BIT | 
+	  GL_STENCIL_BUFFER_BIT);
   glEnable(GL_DEPTH_TEST);
  
   glMatrixMode(GL_PROJECTION);
@@ -248,25 +314,86 @@ int setupProjection(){
   glViewport(0,0, width, height);
   glLoadIdentity();
   if(width>height){
-    glOrtho((-zoomf*(float)width/(float)height), zoomf*((float)width/(float)height), -zoomf*1, zoomf*1, -2, 2);
+    glOrtho((-zoomf*(float)width/(float)height), 
+	    zoomf*((float)width/(float)height), 
+	    -zoomf*1, zoomf*1, -2, 2);
   }else{
-    glOrtho(-zoomf*1, zoomf*1, (-zoomf*(float)height/(float)width), (zoomf*(float)height/(float)width), -2, 2);
+    glOrtho(-zoomf*1, zoomf*1, 
+	    (-zoomf*(float)height/(float)width), 
+	    (zoomf*(float)height/(float)width),
+	    -2, 2);
   };
 };
 
 //assume 0,0,0 is in the center
 int setupModelview(){
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-  glScalef(2.0/256.0, 2.0/256.0, 2.0/256.0);
-  //  glTranslatef(-128.0, -128.0, -128.0);
-  glDisable (GL_BLEND); 
-  glDisable(GL_LIGHTING);
 };
 
 /*
-GLFW callbacks
+  Moving state:
+  Current x & difference from last time.
+  Avaliable in the library but can be instantly repeated.
+ */
+struct MouseState{
+  bool first;
+  int x, y;
+  int dx, dy;
+  MouseState(): first(true), dx(0), dy(0){};
+public:
+  void Move(int x_, int y_){
+    if(first){
+      x = x_; y =y_; 
+      first = false;
+    }else{
+      dx = x_ - x; dy = y_ - y;
+      x = x_; y = y_;
+    };
+  };
+  void Moved(){
+    dx = 0; dy = 0;
+  };
+}mouse_state;
+
+/*
+  Remember and release projection information.
 */
+struct ProjectionState{
+  double matrix[16];
+    
+  V3f ex;
+  V3f ey;
+  V3f ez;
+
+ProjectionState() : ex(1,0,0), ey(0,1,0), ez(0,0,1) {
+  double _matrix[] = {1.0, 0.0, 0.0, 0.0,
+		      0.0, 1.0, 0.0, 0.0,
+		      0.0, 0.0, 1.0, 0.0,
+		      0.0, 0.0, 0.0, 1.0};
+  for(int i = 0; i < 16; i++)matrix[i]=_matrix[i];
+};
+
+  V3f Z(){return V3f(ex.z, ey.z, ez.z);};
+
+  /// first argument - rotation over x axis;
+  /// second - over y axis
+  /// which means they are inverted for mouse navigation.
+  void Rotate(float x, float y){
+    ex = rot_x(ex,x); ey = rot_x(ey,x); ez = rot_x(ez,x);
+    ex = rot_y(ex,y); ey = rot_y(ey,y); ez = rot_y(ez,y);
+    //printf("%f\n",ex.x);;
+    ortoNormalize(ex,ey,ez);
+  };
+
+  void Load(){
+    matrix[0]=ex.x; matrix[1]=ex.y; matrix[2]=ex.z;
+    matrix[4]=ey.x; matrix[5]=ey.y; matrix[6]=ey.z;
+    matrix[8]=ez.x; matrix[9]=ez.y; matrix[10]=ez.z;
+    //glMatrixMode(GL_MODELVIEW);
+    glLoadMatrixd(matrix);
+  };
+} projection_state;
+
+//{{{GLFW callbacks 
 void GLFWCALL GLFWWindowSizeCb(int,int){
   setupProjection();
 };
@@ -281,7 +408,11 @@ void GLFWCALL GLFWWindowRefreshCb(void){
 void GLFWCALL GLFWMouseButtonCb(int,int){
 };
 
-void GLFWCALL GLFWMousePosCb(int,int){
+void GLFWCALL GLFWMousePosCb(int x,int y){
+  mouse_state.Move(x,y);
+  if(glfwGetKey(GLFW_KEY_LCTRL))
+    projection_state.Rotate(-(float)mouse_state.dy/100.0f, 
+			    -(float)mouse_state.dx/100.0f);
 };
 
 void GLFWCALL GLFWMouseWheelCb(int){
@@ -303,6 +434,7 @@ void setupCallbacks(){
     glfwSetMousePosCallback( GLFWMousePosCb );
     glfwSetMouseWheelCallback( GLFWMouseWheelCb );
 };
+///}}} 
 
 /*
 Running a drawable
@@ -310,7 +442,8 @@ Running a drawable
 int runScene(Drawable & scene){
     
     glfwInit();
-    if( !glfwOpenWindow( 500, 500, 0,0,0,0, 16,0, GLFW_WINDOW ) )
+    if( !glfwOpenWindow( 500, 500, 0,0,0,0, 16,0, 
+			 GLFW_WINDOW ) )
       {
         glfwTerminate();
       }
@@ -323,17 +456,28 @@ int runScene(Drawable & scene){
     setupCallbacks();
 
     setupProjection();
-    do
+    do //Main Loop.
       {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	projection_state.Load();
+
+	glScalef(2.0/256.0, 2.0/256.0, 2.0/256.0);
+	glDisable (GL_BLEND); 
+	glDisable(GL_LIGHTING);
+	glClear(GL_COLOR_BUFFER_BIT | 
+		GL_DEPTH_BUFFER_BIT | 
+		GL_STENCIL_BUFFER_BIT);
 
 	setupModelview();
 	
 	scene.NextFrame();
 	scene.Draw();
 	
+	//Clear modified mouse state.
+	mouse_state.Moved();
+	
        	glfwSwapBuffers();
 	glfwWaitEvents();
+
       }
     while(!glfwGetKey( GLFW_KEY_ESC ) &&
 	  glfwGetWindowParam( GLFW_OPENED ));
