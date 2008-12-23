@@ -15,7 +15,7 @@
 (tool-bar-mode 0) ; Disable toolbars and menubars for real estate.
 (menu-bar-mode 0)
 ;; Hopfully not enabled yet.
-(toggle-scroll-bar)
+(toggle-scroll-bar 0)
 
 ;try fonts.
 (defun try-font (x)
