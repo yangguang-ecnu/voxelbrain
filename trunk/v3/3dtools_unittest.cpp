@@ -37,29 +37,114 @@ TEST(OGL, Quad){
   runScene(scene);
 };
 
+void RandomFunction(V3f, float *);
+
 TEST(OGL, Sphere){
   struct: public Drawable{
     void Draw(){
-      DrawSphere( V3f(0,0,0), 30.0f);
+      DrawSphere( V3f(0,0,0), 98.0f, 40);
     };
   } scene; 
   runScene(scene);
 };
 
+
+/*
+  Test navigator operation.
+ */
+TEST(OGL, Navigator){
+  struct: public Drawable{
+    void Draw(){
+      V3f c(Center());
+      c /= 2;
+
+      DrawSphere( c, 3.0f, 40);
+    };
+  } scene; 
+  runScene(scene);
+};
+
+//Repersent relations between 3 values in color.
+void Colorize(V3f & inp){
+  float m = min(inp);
+  inp -= V3f(m,m,m); inp /= inp.length();
+};
+
+/*
+  For each point 3 consequitive samples are taken and their relation is plotted
+  on the surface. Provides efficient way to detect problems.
+ */
+TEST(OGL, SurfaceInfoBars){
+  
+  struct: public Drawable{
+    Surface surf;
+    FastVolume vol;
+    void Draw(){
+
+      int x, y;
+      glfwGetMousePos(&x, &y);
+
+      DrawSurface( surf );
+
+      glDisable(GL_LIGHTING);
+
+      glPushMatrix();
+      glTranslatef(-128,-128,-128);
+      glBegin(GL_LINES);
+      //Draw normals
+      glColor3f(1,0,0);
+      for(int i = 0; i < surf.v.size(); i++){
+	V3f c;
+	AnalyzePoint(surf.v[i]+surf.n[i]*sin(0.01*x)*sin(0.01*x)*1.5, surf.n[i], vol, c);
+	surf.c[i] = c;
+      };
+      glEnd();
+      glPopMatrix();
+
+      DrawPlane(V3f(0,0,0), V3f(20,0,0), V3f(0,20,0), 5);
+      
+
+    };
+  } scene; 
+
+  //Load the triangle data.
+  EXPECT_TRUE(read_surface_binary(scene.surf, "lh.pial"));
+  //Load volume.
+  MgzLoader mri(scene.vol);
+  EXPECT_TRUE(mri.Load("brainmask.mgz"));
+
+  AnalyzeSurface(scene.surf, scene.vol);
+  
+  runScene(scene);  
+
+};
+
+
 TEST(OGL, Surface){
   
   struct: public Drawable{
     Surface surf;
+    FastVolume vol;
     void Draw(){
+
       DrawSurface( surf );
+
+      glDisable(GL_LIGHTING);
+
+
     };
   } scene; 
 
-  //Load the triangle data
   EXPECT_TRUE(read_surface_binary(scene.surf, "lh.pial"));
+  MgzLoader mri(scene.vol);
+  EXPECT_TRUE(mri.Load("brainmask.mgz"));
+
+  AnalyzeSurface(scene.surf, scene.vol);
+
   runScene(scene);  
 
 };
+
 
 TEST(OGL, TexturedQuad){
   struct TexturedScene: public Drawable, public Textured {
@@ -151,9 +236,76 @@ TEST(OGL, Camera){
   struct: public Drawable{
     void Draw(){
       DrawSphere( V3f(0,0,0), 30.0f);
+
+      glBegin(GL_LINES); // Crosshair.
+      glColor3f(1.0f, 0.0f, 0.0f); // X
+      glVertex3f(0.0f,0.0f,0.0f); glVertex3f(100.0f,0.0f,0.0f);
+      glColor3f(0.0f, 1.0f, 0.0f); // Y
+      glVertex3f(0.0f,0.0f,0.0f); glVertex3f(0.0f,100.0f,0.0f);
+      glColor3f(0.0f, 0.0f, 1.0f); // Z
+      glVertex3f(0.0f,0.0f,0.0f); glVertex3f(0.0f,0.0f,100.0f);
+      glEnd();
+
+      glBegin(GL_LINES);
+      glColor3f(0,0,0);
+      for(int i = -100; i <= 100; i+=20){
+	glVertex3f(i, -100, 0);	glVertex3f(i, 100, 0);
+	glVertex3f(-100, i, 0);	glVertex3f(100, i, 0);
+      };
+      glEnd();
+
+      glPushMatrix();
+      glTranslatef(50,50,50);
+      //test point
+      glBegin(GL_LINES);
+      glVertex3f(-3.0f,0.0f,0.0f); glVertex3f(3.0f,0.0f,0.0f);
+      glVertex3f(0.0f,-3.0f,0.0f); glVertex3f(0.0f,3.0f,0.0f);
+      glVertex3f(0.0f,0.0f,-3.0f); glVertex3f(0.0f,0.0f,3.0f);
+      glEnd();
+      glPopMatrix();
     };
   } scene; 
 
+  runScene(scene);
+};
+
+TEST(OGL, RotationControl){
+
+  struct: public Drawable{
+    
+    void Draw(){
+      for(float fi = 0; fi < 360; fi += 12){
+	glPushMatrix();
+	glRotatef(fi, 1, 0, 0);
+	glTranslatef(0,0,100);
+	glBegin(GL_LINES);
+	glColor3f(0,0,0);
+	glVertex3f(-5,-5,0); glVertex3f(0,0,0);
+	glVertex3f(0,0,0); glVertex3f(5,-5,0);
+	glVertex3f(-5,-5,0); glVertex3f(5,-5,0);
+	glEnd();
+	//Internals
+	glTranslatef(0,0,-0.1);
+	glBegin(GL_TRIANGLES);
+	glColor3f(0,0,1);
+	glVertex3f(-5,-5,0); glVertex3f(0,0,0);
+	glVertex3f(5,-5,0);
+	glEnd();
+
+	glPopMatrix();
+      };
+      
+      //grid
+      glBegin(GL_LINES);
+      glColor3f(0,0,0);
+      for(int i = -100; i <= 100; i+=20){
+	glVertex3f(i, -100, 0);	glVertex3f(i, 100, 0);
+	glVertex3f(-100, i, 0);	glVertex3f(100, i, 0);
+      };
+      glEnd();
+
+    };
+  } scene; 
   runScene(scene);
 };
 

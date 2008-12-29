@@ -79,10 +79,13 @@ class Camera: public Drawable{
   Draw unit spheres.
 */
 
-void DrawSphere(const V3f & where, float radius, int steps = 6, Textured * t = NULL);
-void DrawSurface(const Surface & surf);
 
+V3f getZ();
+V3f getE();
+void setupLighting();
 int runScene(Drawable &);
+V3f Center();
+
 
 /*
   Conviniences.
@@ -114,5 +117,10 @@ struct Intersection{
 
 Intersection & IntersectRayPlane(const Ray & ray, const Ray & plane, Intersection & result);
 Intersection & IntersectRaySphere(const Ray & ray, const V3f & center, float r, Intersection & result);
+
+/// drawing functions:
+void DrawSphere(const V3f & where, float radius, int steps = 6, Textured * t = NULL);
+void DrawSurface(const Surface & surf);
+void DrawPlane(const V3f & center, const V3f & dx, const V3f & dy, int cells);
 
 #endif // __3dtools_h__

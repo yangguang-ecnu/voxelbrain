@@ -90,6 +90,8 @@ void BiLink(Connectivity &, Vertice a, Vertice b);
 
 void Propagate(const Connectivity &, VerticeSet &, int times);
 
+float AnalyzePoint(const V3f & pnt, const V3f & direction, FastVolume & volume, V3f & out);
+void AnalyzeSurface(Surface & surface, FastVolume & volume);
 
 #endif // __surface_h__
 

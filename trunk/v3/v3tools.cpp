@@ -80,6 +80,15 @@ void ortoNormalize(V3f & nnx, V3f & nny, V3f & nnz){
   nnz = newz;
 };
 
+//Find minimal coordinate.
+float min(const V3f & in){
+  if(in.x < in.y){
+    return (in.x < in.z)?in.x:in.z;
+  }else{ //in.x > in.y
+    return (in.y < in.z)?in.y:in.z;
+  };
+};
+
 void say(char *msg, const V3f & v){
   printf("%s:%f:%f:%f\n", msg, v.x, v.y, v.z);
 };

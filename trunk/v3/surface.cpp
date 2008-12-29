@@ -308,6 +308,32 @@ struct point_set_property{
 
 const float point_set_property::EPSILON = 0.00001f;
 
+
+float AnalyzePoint(const V3f & pnt, const V3f & n, FastVolume & volume, V3f & out){
+  out.x = volume.Sample(pnt.x+n.x, pnt.y+n.y, pnt.z+n.z);
+  out.y = volume.Sample(pnt.x+2*n.x, pnt.y+2*n.y, pnt.z+2*n.z);
+  out.z = volume.Sample(pnt.x+3*n.x, pnt.y+3*n.y, pnt.z+3*n.z);
+  float m = min(out);
+  out -= V3f(m, m, m);
+  out /= out.length();
+  return 0;
+
+};
+
+/*
+  Iterate AnalyzePoint over all points.
+ */
+void AnalyzeSurface(Surface & surf, FastVolume & vol){
+  surf.c.clear();
+  for(int i = 0; i < surf.v.size(); i++){
+    V3f c;
+    AnalyzePoint(surf.v[i], surf.n[i], vol, c);
+    surf.c.push_back(c);
+  };
+}; 
+
+
+
 //returns color from point property and point set property
 V3f analyze_point(const point_property & in, point_set_property & t){
   
