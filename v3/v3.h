@@ -78,9 +78,10 @@ Basic misc definitions
     };
 
   
-  typedef V3<int> V3i; //integer vector
-  typedef V3<float> V3f; // float vector
+typedef V3<int> V3i; //integer vector
+typedef V3<float> V3f; // float vector
 
+float min(const V3f &);
   
 #endif
 

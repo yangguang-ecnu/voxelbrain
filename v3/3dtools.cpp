@@ -16,16 +16,19 @@ void DrawSphereVertex(float a,
 		      float b, 
 		      const V3f & where, 
 		      float radius, Textured * t){
-  V3f pos(where); pos += 
-		    V3f(cos(b)*sin(a)*radius, 
-			cos(b)*cos(a)*radius, 
-			sin(b)*radius);
+  V3f pos(where); V3f n(cos(b)*sin(a), 
+			cos(b)*cos(a), 
+			 sin(b));
+  pos += n*radius;
+
   if(t){
     t->SetTexture(pos);
   }else{
-    glColor3f(cos(b), cos(b)*cos(a), cos(b)*cos(a+b));
+    //glColor3f(cos(b), cos(b)*cos(a), cos(b)*cos(a+b));
+    glColor3f(0.5,0.5,0.5);
   };
-    glVertex3f(pos);
+  glNormal3f(1*n.x, 1*n.y, 1*n.z);
+  glVertex3f(pos);
 };
 
 void DrawSphere(const V3f & where, 
@@ -44,10 +47,10 @@ void DrawSphere(const V3f & where,
   glBegin(GL_QUADS);
     for(float b = -PI/2; b < PI/2; b+=db)
       for(float a = 0; a < 2*PI; a+=da){
-      DrawSphereVertex(a,b,where, radius,t);
-      DrawSphereVertex(a,b+db,where, radius,t);
-      DrawSphereVertex(a+da,b+db,where, radius,t);
-      DrawSphereVertex(a+da,b,where, radius,t);
+      DrawSphereVertex( a, b, where, radius,t);
+      DrawSphereVertex( a, b+db, where, radius,t);
+      DrawSphereVertex( a+da, b+db, where, radius,t);
+      DrawSphereVertex( a+da, b, where, radius,t);
     }; 
   glEnd();
   glDisable(GL_TEXTURE_3D);
@@ -58,12 +61,28 @@ void DrawSphere(const V3f & where,
 void DrawSurface( const Surface & surf){
   glBegin(GL_TRIANGLES);
   glColor3f(0,1,0);
+  bool colors_valid = (surf.c.size() == surf.v.size()); //make sure there are colors to use.
   for(vector<V3i>::const_iterator i = surf.tri.begin(); i != surf.tri.end(); i++){
     for(int vertex = 0; vertex < 3; vertex++){ //Each verex of a face
-      // glColor3f(surf.c[(*i)[vertex]]);
+      if(colors_valid)glColor3f(surf.c[(*i)[vertex]]);
+      glNormal3f(surf.n[(*i)[vertex]].x, surf.n[(*i)[vertex]].y, surf.n[(*i)[vertex]].z );
       glVertex3f(surf.v[(*i)[vertex]]-V3f(128,128,128));
     }; //Each vertex of a face
   }; //Each face
+  glEnd();
+};
+
+void DrawPlane(const V3f & center, const V3f & dx , const V3f & dy, int cells){
+  glBegin(GL_LINES);
+  glColor3f(0,0,0);
+  V3f a1(center - dx*cells - dy*cells);
+  V3f b1(center + dx*cells - dy*cells);
+  V3f a2(center - dx*cells - dy*cells);
+  V3f b2(center - dx*cells + dy*cells);
+  for(int i = 0; i <= 2*cells; i++){
+    glVertex3f(a1+dy*i); glVertex3f(b1+dy*i);
+    glVertex3f(a2+dx*i); glVertex3f(b2+dx*i);
+  };
   glEnd();
 };
 
@@ -247,26 +266,6 @@ const V3f & Textured::SetTexture(const V3f & where){
 };
 
 /*
-  Camera object.
-*/
-
-Camera::Camera(Drawable & in): scene(in){};
-
-/*
-  Try a dummy camera implementation first.
- */
-int frame_no;
-
-void Camera::Draw(){
-  frame_no++;
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glRotatef(0.9*frame_no,0,1,0);
-  scene.Draw();
-  glPopMatrix();
-};
-
-/*
   Conviniences.
 */
 
@@ -301,7 +300,7 @@ void Drawable::NextFrame(){
 
 int setupProjection(){
   int width, height;
-  float zoomf = 1.0f;
+  float zoom = 1.0f;
   
   glClearColor(1.0,1.0,1.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | 
@@ -313,16 +312,15 @@ int setupProjection(){
   glfwGetWindowSize(&width, &height);
   glViewport(0,0, width, height);
   glLoadIdentity();
-  if(width>height){
-    glOrtho((-zoomf*(float)width/(float)height), 
-	    zoomf*((float)width/(float)height), 
-	    -zoomf*1, zoomf*1, -2, 2);
-  }else{
-    glOrtho(-zoomf*1, zoomf*1, 
-	    (-zoomf*(float)height/(float)width), 
-	    (zoomf*(float)height/(float)width),
-	    -2, 2);
-  };
+
+  float fit_w = zoom*((width>height)?(float)width/(float)height:1.0f);
+  float fit_h = zoom*((width>height)?1.0f:(float)height/(float)width);
+
+  //  glOrtho(-fit_w, fit_w, -fit_h, fit_h, -2, 2);
+  glFrustum(-fit_w, fit_w, -fit_h, fit_h, fit_w, 3*fit_w);
+  glTranslatef(0,0,-2*fit_w);
+
+  glMatrixMode(GL_MODELVIEW);
 };
 
 //assume 0,0,0 is in the center
@@ -372,6 +370,8 @@ ProjectionState() : ex(1,0,0), ey(0,1,0), ez(0,0,1) {
   for(int i = 0; i < 16; i++)matrix[i]=_matrix[i];
 };
 
+  V3f X(){return V3f(ex.x, ey.x, ez.x);};
+  V3f Y(){return V3f(ex.y, ey.y, ez.y);};
   V3f Z(){return V3f(ex.z, ey.z, ez.z);};
 
   /// first argument - rotation over x axis;
@@ -393,6 +393,74 @@ ProjectionState() : ex(1,0,0), ey(0,1,0), ez(0,0,1) {
   };
 } projection_state;
 
+V3f getX(){return projection_state.X();};
+V3f getY(){return projection_state.Y();};
+V3f getZ(){return projection_state.Z();};
+
+
+V3f getE(){
+  return projection_state.ex;
+};
+
+
+struct StereoState {
+  bool enabled;
+  float phase;
+  float amplitude; 
+  float speed; // phase-change-per-frame
+  
+StereoState():enabled(true), phase(0), amplitude(0.01), speed(0.1) {};
+public:
+  void Ping(){
+    projection_state.Rotate(0, amplitude*sin(phase));
+    phase += speed;
+  };
+
+}stereo_state;
+
+/*Determines position of a cursor*/
+struct Navigator: public Drawable {
+  
+  V3f center, dx, dy;
+
+  Navigator(): center(V3f(0,0,0)), dx(V3f(1,0,0)), dy(V3f(0,1,0)){};
+  
+  void move(float x, float y){
+    center += dx*x+dy*y;
+  };
+
+  void switch_orientation(){
+    V3f new_dx(dx.z, dx.x, dx.y); dx = new_dx;
+    V3f new_dy(dy.z, dy.x, dy.y); dy = new_dy;
+  };
+
+  void Draw(){ //simple cross
+    glDisable(GL_LIGHTING);
+    glColor3f(0,0,0);
+    glBegin(GL_LINES);
+    int arrow_size = 5;
+    for(int n = 0; n < 4; n++){
+      V3f cx = center+dx*arrow_size*n;
+      V3f cax = cx - dx*arrow_size - dy*arrow_size;
+      V3f cbx = cx - dx*arrow_size + dy*arrow_size;
+
+      V3f cy = center+dy*arrow_size*n;
+      V3f cay = cy - dy*arrow_size - dx*arrow_size;
+      V3f cby = cy - dy*arrow_size + dx*arrow_size;
+      
+      glVertex3f(cx); glVertex3f(cax); glVertex3f(cx); glVertex3f(cbx);
+      glVertex3f(cy); glVertex3f(cay); glVertex3f(cy); glVertex3f(cby);
+    };
+    glEnd();
+  };
+
+  
+}navigator;
+
+V3f Center(){
+  return navigator.center;
+};
+
 //{{{GLFW callbacks 
 void GLFWCALL GLFWWindowSizeCb(int,int){
   setupProjection();
@@ -401,6 +469,7 @@ void GLFWCALL GLFWWindowSizeCb(int,int){
 int GLFWCALL GLFWWindowCloseCb(void){
   return 1;				  
 };
+
 void GLFWCALL GLFWWindowRefreshCb(void){
    setupProjection();
 };
@@ -410,15 +479,24 @@ void GLFWCALL GLFWMouseButtonCb(int,int){
 
 void GLFWCALL GLFWMousePosCb(int x,int y){
   mouse_state.Move(x,y);
-  if(glfwGetKey(GLFW_KEY_LCTRL))
-    projection_state.Rotate(-(float)mouse_state.dy/100.0f, 
-			    -(float)mouse_state.dx/100.0f);
+  if(glfwGetKey(GLFW_KEY_LCTRL)){
+    projection_state.Rotate((float)mouse_state.dy/100.0f, 
+			    (float)mouse_state.dx/100.0f);
+  };
+
+  if(glfwGetKey(GLFW_KEY_LSHIFT)){
+    navigator.move(mouse_state.dx/10.0f, -mouse_state.dy/10.0f);
+  };
 };
 
 void GLFWCALL GLFWMouseWheelCb(int){
 };
 
-void GLFWCALL GLFWKeyCb(int,int){
+void GLFWCALL GLFWKeyCb(int key, int state){
+   if((key == GLFW_KEY_TAB) && (state == GLFW_PRESS)){
+    navigator.switch_orientation();
+  };
+
 };
 
 void GLFWCALL GLFWCharCb(int,int){
@@ -428,7 +506,7 @@ void setupCallbacks(){
     glfwSetWindowSizeCallback( GLFWWindowSizeCb );
     glfwSetWindowCloseCallback( GLFWWindowCloseCb );
     glfwSetWindowRefreshCallback( GLFWWindowRefreshCb );
-    glfwSetKeyCallback( GLFWMouseButtonCb );
+    glfwSetKeyCallback( GLFWKeyCb );
     glfwSetCharCallback( GLFWMousePosCb );
     glfwSetMouseButtonCallback( GLFWMouseButtonCb );
     glfwSetMousePosCallback( GLFWMousePosCb );
@@ -436,9 +514,70 @@ void setupCallbacks(){
 };
 ///}}} 
 
+
+/*
+  The idea was to do all the needed setup for lighting in advance, 
+  and then just use the function where needed;
+  Now it seems that lighting cannot be done in a function.
+  Which is, to my current limited knowledge is impossible.
+
+  i.e.
+
+  f(){
+    Set();
+    Up();
+    Lighting();
+  }
+
+  Supposed to be identincal to:
+  
+  f(){
+    g();
+  };
+
+  g(){
+    Set();
+    Up();
+    Lighting();
+ };
+
+ But for some reason, seemingly having something to do with array initialization,
+ This is not the case.
+
+ Let's see how many arguments needed for GL_POSITION.
+ Indeed, it takes 4 values; I wonder how it worked before.
+
+ */
+void SetupLighting(){
+  
+      glEnable(GL_NORMALIZE);
+      glEnable(GL_LIGHTING);
+      glEnable(GL_LIGHT0);
+      glEnable(GL_COLOR_MATERIAL);
+      glColorMaterial(GL_FRONT_AND_BACK, GL_EMISSION);
+
+      float specular[] = {0.6,0.6,0.6,1};
+      glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+      glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+
+      float diffuse[] = {0.6,0.6,0.6,1};
+      glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+      glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+
+      GLfloat high_shininess[] = { 50.0 };
+      glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
+
+      V3f z(getZ()); z *= -1; z+=getX()*0.3; z+= getY()*0.3;
+      float position[] = {250.0*z.x, 250.0*z.x, 250.0*z.x, 1};
+      glLightfv(GL_LIGHT0, GL_POSITION, position);
+
+};
+
+
 /*
 Running a drawable
 */
+
 int runScene(Drawable & scene){
     
     glfwInit();
@@ -455,12 +594,17 @@ int runScene(Drawable & scene){
   
     setupCallbacks();
 
-    setupProjection();
     do //Main Loop.
       {
-	projection_state.Load();
+	setupProjection();
 
-	glScalef(2.0/256.0, 2.0/256.0, 2.0/256.0);
+       	stereo_state.Ping();
+
+       	projection_state.Load();
+
+
+	float zoom=2.0;
+	glScalef(zoom*2.0/256.0, zoom*2.0/256.0, zoom*2.0/256.0);
 	glDisable (GL_BLEND); 
 	glDisable(GL_LIGHTING);
 	glClear(GL_COLOR_BUFFER_BIT | 
@@ -470,13 +614,27 @@ int runScene(Drawable & scene){
 	setupModelview();
 	
 	scene.NextFrame();
+
+	/*   Temporary light insertion:
+	 */
+
+	navigator.Draw();
+	//reference plane
+	DrawPlane(V3f(0,0,0), V3f(20,0,0), V3f(0,20,0), 5);
+
+	SetupLighting();
 	scene.Draw();
 	
 	//Clear modified mouse state.
 	mouse_state.Moved();
 	
        	glfwSwapBuffers();
-	glfwWaitEvents();
+	if(!stereo_state.enabled){
+	  glfwWaitEvents();
+	}else{
+	  glfwPollEvents();
+	  glfwSleep(0.01); //just sleep.
+	};
 
       }
     while(!glfwGetKey( GLFW_KEY_ESC ) &&
