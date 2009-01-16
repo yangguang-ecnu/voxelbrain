@@ -422,10 +422,16 @@ public:
 struct Navigator: public Drawable {
   
   V3f center, dx, dy;
+  float cur_x, cur_y;
 
-  Navigator(): center(V3f(0,0,0)), dx(V3f(1,0,0)), dy(V3f(0,1,0)){};
+ Navigator(): cur_x(0), cur_y(0), center(V3f(0,0,0)), dx(V3f(1,0,0)), dy(V3f(0,1,0)){};
   
+  void idle_move(){
+    move(cur_x, cur_y);
+  };
+
   void move(float x, float y){
+    cur_x = x; cur_y = y;
     center += dx*x+dy*y;
   };
 
@@ -493,10 +499,17 @@ void GLFWCALL GLFWMouseWheelCb(int){
 };
 
 void GLFWCALL GLFWKeyCb(int key, int state){
-   if((key == GLFW_KEY_TAB) && (state == GLFW_PRESS)){
-    navigator.switch_orientation();
+  if(state  == GLFW_PRESS){
+    switch(key){
+    case GLFW_KEY_TAB: navigator.switch_orientation(); break;
+    case GLFW_KEY_UP: navigator.move( 0.0f, 1.0f); break;
+    case GLFW_KEY_DOWN: navigator.move( 0.0f, -1.0f); break;
+    case GLFW_KEY_RIGHT: navigator.move( 1.0f, 0.0f); break;
+    case GLFW_KEY_LEFT: navigator.move( -1.0f, 0.0f); break;
+    };
+  }else{
+    navigator.move( 0.0f, 0.0f);
   };
-
 };
 
 void GLFWCALL GLFWCharCb(int,int){
@@ -578,6 +591,49 @@ void SetupLighting(){
 Running a drawable
 */
 
+Ray mousePosition(){
+  int x, y, width, height;
+  glfwGetMousePos(&x, &y);
+  glfwGetWindowSize(&width, &height);
+    y = height-y;
+
+  GLdouble modelview[16];
+  GLdouble projection[16];
+  GLint viewport[4];
+
+  glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+  glGetDoublev(GL_PROJECTION_MATRIX, projection);
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  double nx, ny, nz;
+  double fx, fy, fz;
+  gluUnProject( x, y, -1, modelview, projection, viewport, &nx, &ny, &nz);
+  gluUnProject( x, y, 1, modelview, projection, viewport, &fx, &fy, &fz);
+  V3f near((float)nx, (float)ny, (float)nz);
+  V3f far((float)fx, (float)fy, (float)fz);
+  V3f dir(far); dir -= near;
+  /*  //we need to step maximum integer steps, to get into evry layer.
+      int steps = (int)MAX3(ABS(near.x-far.x),ABS(near.y-far.y),ABS(near.z-far.z)); 
+      V3f step(dir); step /= steps;
+      V3f cur(near); //start with near;
+      for(int i = 0; i < steps; i++){
+      cur += step;
+      if((cur.x > 0) && (cur.y > 0) && (cur.z > 0) &&
+      (cur.x < 256) && (cur.y < 256) && (cur.z < 255)){
+      //inside the cube, let's check.
+      int offset = vol.getOffset((int)cur.x, (int)cur.y, (int)cur.z);
+      if(vol.vol[offset] > tw_cursor_hit){ // hit condition tuned by gui
+	set_cursor(cur+step*tw_cursor_depth); // how deep below the surface we want our cursor to go.
+	//say("found",cursor)
+	return;
+      };
+    };
+  };
+  };*/
+
+  return Ray(near, dir);
+  
+};
+
 int runScene(Drawable & scene){
     
     glfwInit();
@@ -598,7 +654,7 @@ int runScene(Drawable & scene){
       {
 	setupProjection();
 
-       	stereo_state.Ping();
+	//	stereo_state.Ping();
 
        	projection_state.Load();
 
@@ -636,6 +692,8 @@ int runScene(Drawable & scene){
 	  glfwSleep(0.01); //just sleep.
 	};
 
+	navigator.idle_move();
+
       }
     while(!glfwGetKey( GLFW_KEY_ESC ) &&
 	  glfwGetWindowParam( GLFW_OPENED ));
@@ -648,10 +706,14 @@ int runScene(Drawable & scene){
 Intersections.
  */
 
+
 Ray::Ray(const V3f & from, const V3f & direction): O(from), D(direction){};
 Ray::Ray(const Ray & ray): O(ray.O), D(ray.D){};
+Ray::Ray(): O(0,0,0), D(1,0,0){};
 
 /// Extend ray to specified length.
+
+V3f travel_ray;
 V3f & Ray::Travel(float distance, V3f & result){
 	result = D; result *= distance; result += O;
 	return result;
@@ -691,7 +753,7 @@ Intersection & IntersectRaySphere(const Ray & ray, const V3f & center, float r, 
   float b = 2*cur.D.dot(cur.O);
   float c = cur.O.length2()-r*r;
   float discriminant = b*b-4*a*c;
-  printf("a:%f b:%f c:%f; hence discriminant:%f\n", a, b, c, discriminant);
+  //  printf("a:%f b:%f c:%f; hence discriminant:%f\n", a, b, c, discriminant);
   if(discriminant < 0)return result.is(false, 0); 
   //interested in positive t's
   float discriminant_root = sqrtf(discriminant);

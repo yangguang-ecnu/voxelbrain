@@ -187,6 +187,112 @@ TEST(OGL, TexturedSphere){
   runScene(scene);
 };
 
+/*
+  Mouse navigation - intersection with a sphere.
+*/
+TEST(OGL, Navigation){
+  struct: public Drawable{
+    void Draw(){
+      Ray in( mousePosition() ); //draw point ray
+      glPointSize(5);
+      glBegin(GL_POINTS);
+      glColor3f(1,0,1);
+      for(double f = 0.0; f < 1.0; f+=0.02){
+	glVertex3f(in.O+in.D*f);
+      };
+      glEnd();
+
+      V3f pnt(0,0,0);
+      V3f hit_v;
+      float radius = 20;
+      Intersection hit_point;
+
+      //      printf("from %f %f %f - into %f %f %f\n", in.O.x, in.O.y, in.O.z, in.D.x, in.D.y, in.D.z);
+      if(IntersectRaySphere(in, pnt, radius, hit_point).hit){
+      }else{
+	IntersectRayPlane(in, Ray(V3f(0,0,0), V3f(0,0,-1)), hit_point);
+      };
+	DrawSphere(in.Travel(hit_point.distance, hit_v), 10, 10);
+      
+      
+      DrawSphere(pnt, radius, 30);
+    };
+  } scene;
+  runScene(scene);
+};
+
+TEST(OGL, SurfaceNavigation){
+  
+  struct: public Drawable{
+    Surface surf;
+    FastVolume vol;
+    Ray in;
+    void Draw(){
+
+      int x, y;
+      glfwGetMousePos(&x, &y);
+
+      DrawSurface( surf );
+
+      glDisable(GL_LIGHTING);
+
+      glPushMatrix();
+      glTranslatef(-128,-128,-128);
+
+      Intersection hit;
+      
+      if(glfwGetKey(GLFW_KEY_RCTRL) == GLFW_PRESS)in = mousePosition();
+
+      glPointSize(5);
+      glBegin(GL_POINTS);
+      glColor3f(1,0,1);
+      for(double f = 0.0; f < 1.0; f+=0.02){
+	glVertex3f(in.O+in.D*f);
+      };
+
+
+      float min_depth = 1000000;
+      in.D /= in.D.length();
+
+      for(int i = 0; i < surf.v.size(); i++){
+	//	DrawSphere(surf.v[i], 1.0, 3);
+	//glVertex3f(surf.v[i]);
+	IntersectRaySphere(in, surf.v[i], 2, hit);
+	if(hit.hit && (hit.distance < min_depth)) min_depth = hit.distance;
+      };
+      glEnd();
+
+      DrawSphere(in.Travel(min_depth+10), 15.0, 10);
+
+      glBegin(GL_LINES);
+      //Draw normals
+      glColor3f(1,0,0);
+      for(int i = 0; i < surf.v.size(); i++){
+	V3f c;
+	AnalyzePoint(surf.v[i]+surf.n[i]*sin(0.01*x)*sin(0.01*x)*1.5, surf.n[i], vol, c);
+	surf.c[i] = c;
+      };
+      glEnd();
+      glPopMatrix();
+      
+
+    };
+  } scene; 
+
+  //Load the triangle data.
+  EXPECT_TRUE(read_surface_binary(scene.surf, "lh.pial"));
+  //Load volume.
+  MgzLoader mri(scene.vol);
+  EXPECT_TRUE(mri.Load("brainmask.mgz"));
+
+  AnalyzeSurface(scene.surf, scene.vol);
+  
+  runScene(scene);  
+
+  
+};
+
+
 TEST(OGL, TexturedFastVolumeSphere){
   struct: public Drawable, public Textured{
     void Draw(){

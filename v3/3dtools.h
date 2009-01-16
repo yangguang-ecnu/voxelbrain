@@ -80,8 +80,11 @@ class Camera: public Drawable{
 */
 
 
+struct Ray;
+
 V3f getZ();
 V3f getE();
+Ray mousePosition();
 void setupLighting();
 int runScene(Drawable &);
 V3f Center();
@@ -99,13 +102,14 @@ const V3f & SetColor(const V3f &);
 /*
   Rays.
   */
-  
+extern V3f travel_ray;
 struct Ray {
 	V3f O; //origin 
 	V3f D; //direction
-	Ray(const V3f &, const V3f &);
-	Ray(const Ray &);
-    V3f & Travel(float distance, V3f & result);
+  Ray();
+  Ray(const V3f &, const V3f &);
+  Ray(const Ray &);
+  V3f & Travel(float distance, V3f & result = travel_ray);
 };
 
 //Intersection information for a given ray.
