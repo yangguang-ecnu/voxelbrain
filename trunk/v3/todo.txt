@@ -1,0 +1,3 @@
+Proper lighting!!! (find out where light is)
+then - put a textured sphere, and to the side of the actual point.. need to find out how to do that.
+then - we have a point, can play with propagation.
