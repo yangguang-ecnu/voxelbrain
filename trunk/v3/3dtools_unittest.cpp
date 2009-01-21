@@ -89,7 +89,6 @@ TEST(OGL, SurfaceInfoBars){
       glDisable(GL_LIGHTING);
 
       glPushMatrix();
-      glTranslatef(-128,-128,-128);
       glBegin(GL_LINES);
       //Draw normals
       glColor3f(1,0,0);
@@ -237,7 +236,6 @@ TEST(OGL, SurfaceNavigation){
       glDisable(GL_LIGHTING);
 
       glPushMatrix();
-      glTranslatef(-128,-128,-128);
 
       Intersection hit;
       
@@ -296,6 +294,8 @@ TEST(OGL, SurfaceNavigation){
 TEST(OGL, TexturedFastVolumeSphere){
   struct: public Drawable, public Textured{
     void Draw(){
+      printf("%d:\n", (int)texturing_fastvolume->vol);
+
       glEnable(GL_BLEND);
       glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
       DrawSphere(V3f(80*sin(0.05*frame_no_), 
@@ -303,12 +303,14 @@ TEST(OGL, TexturedFastVolumeSphere){
 		     80*sin(0.03*frame_no_+65)), 
 		 30.0f, 5,  
 		 this);
+                 
     };
   } scene;
 
   FastVolume volume;
-  MgzLoader mri(volume);
-  EXPECT_TRUE(mri.Load("brainmask.mgz"));
+   MgzLoader mri(volume);
+   EXPECT_TRUE(mri.Load("brainmask.mgz"));
+   EXPECT_NE((void *)0 , volume.vol);
 
   scene.texturing_fastvolume = & volume;  
 
@@ -341,7 +343,7 @@ TEST(OGL, Camera){
 
   struct: public Drawable{
     void Draw(){
-      DrawSphere( V3f(0,0,0), 30.0f);
+      DrawSphere( V3f (0,0,0), 30.0f);
 
       glBegin(GL_LINES); // Crosshair.
       glColor3f(1.0f, 0.0f, 0.0f); // X

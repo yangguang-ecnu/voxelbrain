@@ -80,7 +80,7 @@ bool read_surface_binary(Surface & surf, std::string name){
   //int dummy;
     data.GetFloat(&in.x).GetFloat(&in.y).GetFloat(&in.z);
     in = V3f(-in.x, +in.z, +in.y);
-    in+=V3f(128, 127, 128); //arbitrary correction.
+    //    in+=V3f(128, 127, 128); //arbitrary correction.
     //  printf("%f, %f, %f\n", in.x, in.y, in.z);
     surf.v.push_back(in);
     seed += in;
@@ -310,9 +310,9 @@ const float point_set_property::EPSILON = 0.00001f;
 
 
 float AnalyzePoint(const V3f & pnt, const V3f & n, FastVolume & volume, V3f & out){
-  out.x = volume.Sample(pnt.x+n.x, pnt.y+n.y, pnt.z+n.z);
-  out.y = volume.Sample(pnt.x+2*n.x, pnt.y+2*n.y, pnt.z+2*n.z);
-  out.z = volume.Sample(pnt.x+3*n.x, pnt.y+3*n.y, pnt.z+3*n.z);
+  out.x = volume.SampleCentered(pnt.x+n.x, pnt.y+n.y, pnt.z+n.z);
+  out.y = volume.SampleCentered(pnt.x+2*n.x, pnt.y+2*n.y, pnt.z+2*n.z);
+  out.z = volume.SampleCentered(pnt.x+3*n.x, pnt.y+3*n.y, pnt.z+3*n.z);
   float m = min(out);
   out -= V3f(m, m, m);
   out /= out.length();

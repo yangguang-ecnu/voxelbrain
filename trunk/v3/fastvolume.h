@@ -106,6 +106,7 @@ class FastVolume {
   };
 
   float Sample(float x_in, float y_in, float z_in);
+  float SampleCentered(float x_in, float y_in, float z_in);
 
 
   /* Copy data from linear volume to current one.
