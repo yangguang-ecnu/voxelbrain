@@ -453,8 +453,14 @@ void FastVolume::set_band(){
 
 };
 
+//Here we assume that (128,128,128) is a center.
+float FastVolume::SampleCentered(float x_in, float y_in, float z_in){
+  return Sample(x_in+128.0, y_in+128.0, z_in+128.0);
+};
+
 //Well-writen first;
 float FastVolume::Sample(float x_in, float y_in, float z_in){
+  if(x_in < 1 || y_in < 1 || z_in < 1 || x_in > 254 || y_in > 254 || z_in > 254) return 0;
   // Least possible corner.
   float ox = floorf(x_in);
   float oy = floorf(y_in);

@@ -66,7 +66,7 @@ void DrawSurface( const Surface & surf){
     for(int vertex = 0; vertex < 3; vertex++){ //Each verex of a face
       if(colors_valid)glColor3f(surf.c[(*i)[vertex]]);
       glNormal3f(surf.n[(*i)[vertex]].x, surf.n[(*i)[vertex]].y, surf.n[(*i)[vertex]].z );
-      glVertex3f(surf.v[(*i)[vertex]]-V3f(128,128,128));
+      glVertex3f(surf.v[(*i)[vertex]]);
     }; //Each vertex of a face
   }; //Each face
   glEnd();
@@ -215,7 +215,7 @@ bool UpdateTextured(Textured & t, Range & r){
 	if(t.texturing_fastvolume){
 	  res = 
 	    (unsigned char)t.texturing_fastvolume->\
-	    Sample((int)cur.x%255, 
+	    SampleCentered((int)cur.x%255, 
 		   (int)cur.y%255, 
 		   (int)cur.z%255);
 	  ((BYTE)t.data)[Offset(x,y,z)] = res;
@@ -317,8 +317,8 @@ int setupProjection(){
   float fit_h = zoom*((width>height)?1.0f:(float)height/(float)width);
 
   //  glOrtho(-fit_w, fit_w, -fit_h, fit_h, -2, 2);
-  glFrustum(-fit_w, fit_w, -fit_h, fit_h, fit_w, 3*fit_w);
-  glTranslatef(0,0,-2*fit_w);
+  glFrustum(-fit_w, fit_w, -fit_h, fit_h, 2*fit_w, 5*fit_w);
+  glTranslatef(0,0,-4*fit_w);
 
   glMatrixMode(GL_MODELVIEW);
 };
@@ -528,39 +528,6 @@ void setupCallbacks(){
 ///}}} 
 
 
-/*
-  The idea was to do all the needed setup for lighting in advance, 
-  and then just use the function where needed;
-  Now it seems that lighting cannot be done in a function.
-  Which is, to my current limited knowledge is impossible.
-
-  i.e.
-
-  f(){
-    Set();
-    Up();
-    Lighting();
-  }
-
-  Supposed to be identincal to:
-  
-  f(){
-    g();
-  };
-
-  g(){
-    Set();
-    Up();
-    Lighting();
- };
-
- But for some reason, seemingly having something to do with array initialization,
- This is not the case.
-
- Let's see how many arguments needed for GL_POSITION.
- Indeed, it takes 4 values; I wonder how it worked before.
-
- */
 void SetupLighting(){
   
       glEnable(GL_NORMALIZE);
