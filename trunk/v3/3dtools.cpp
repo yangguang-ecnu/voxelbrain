@@ -218,9 +218,15 @@ bool UpdateTextured(Textured & t, Range & r){
 	    SampleCentered((int)cur.x%255, 
 		   (int)cur.y%255, 
 		   (int)cur.z%255);
-	  ((BYTE)t.data)[Offset(x,y,z)] = res;
-	  ((BYTE)t.data)[Offset(x,y,z)+1] = res;
-	  ((BYTE)t.data)[Offset(x,y,z)+2] =  res;
+
+	  //Color conversion.
+	  int r = res * 3; r=(r<0)?0:(r>255?255:r);
+	  int g = (res - 80) * 3; g=(g<0)?0:(g>255?255:g);
+	  int b = (res - 160) * 3; b=(b<0)?0:(b>255?255:b);
+
+	  ((BYTE)t.data)[Offset(x,y,z)] = r;
+	  ((BYTE)t.data)[Offset(x,y,z)+1] = g;
+	  ((BYTE)t.data)[Offset(x,y,z)+2] =  b;
 	  ((BYTE)t.data)[Offset(x,y,z)+3] =  255;
 	}else{
 	  bool line_hit = 
@@ -283,15 +289,6 @@ const V3f & glTexCoord3f(const V3f & v){
 
 const V3f & SetColor(const V3f & v){
   glColor3f(v.x, v.y, v.z); return v;
-};
-
-
-/* 
-   Rudimentary scene management
-*/
-
-void Drawable::NextFrame(){
-  frame_no_++;
 };
 
 /*
@@ -635,8 +632,6 @@ int runScene(Drawable & scene){
 		GL_STENCIL_BUFFER_BIT);
 
 	setupModelview();
-	
-	scene.NextFrame();
 
 	/*   Temporary light insertion:
 	 */

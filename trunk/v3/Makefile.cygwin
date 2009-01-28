@@ -16,4 +16,6 @@ GTEST_INCLUDE:=$(GTEST_BASE)/include
 LINKFLAGS := -lopengl32 -lglu32 -lz
 CXXFLAGS := -DKDL_CYGWIN
 
+ETAGSFLAGS := 
+
 -include Makefile

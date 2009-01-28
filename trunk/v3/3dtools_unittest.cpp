@@ -5,7 +5,7 @@
 #include "loader.h"
 #include <GL/glfw.h>
 
-// Test loading of volume
+//Volume data loading.
 TEST(Mgz, Interface){
   FastVolume volume;
   MgzLoader mri(volume);
@@ -21,6 +21,8 @@ TEST(Mgz, Interface){
   EXPECT_EQ(random_voxel, volume.vol[5]);
 }; 
 
+/*
+//Simplest possile 3D scene.
 TEST(OGL, Quad){
   struct : public Drawable{
     void Draw(){
@@ -36,9 +38,9 @@ TEST(OGL, Quad){
   } scene;
   runScene(scene);
 };
+*/
 
-void RandomFunction(V3f, float *);
-
+//DrawSphere function.
 TEST(OGL, Sphere){
   struct: public Drawable{
     void Draw(){
@@ -48,63 +50,82 @@ TEST(OGL, Sphere){
   runScene(scene);
 };
 
-
-/*
-  Test navigator operation.
- */
-TEST(OGL, Navigator){
-  struct: public Drawable{
+//Blending text.
+TEST(OGL, QuadBlending){
+  struct : public Drawable{
     void Draw(){
-      V3f c(Center());
-      c /= 2;
+      glEnable(GL_BLEND);
+      glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glBegin(GL_QUADS);
+      glColor4f(1.0f, 0.0f, 0.0f, 0.5f);
+      glVertex3f(100,100,100); //random quad
+      glVertex3f(100,-100,100);
+      glVertex3f(-100,-100,100);
+      glVertex3f(-100, 100,100);
+      glEnd();
 
-      DrawSphere( c, 3.0f, 40);
     };
-  } scene; 
+  } scene;
+
   runScene(scene);
 };
 
-//Repersent relations between 3 values in color.
-void Colorize(V3f & inp){
-  float m = min(inp);
-  inp -= V3f(m,m,m); inp /= inp.length();
+//Textures.
+TEST(OGL, TexturedQuad){
+  
+  struct: public Drawable  {
+    Textured texture;
+
+    void Draw(){
+
+      V3f a(20.0f,20.0f,5.0f); //random quad
+      V3f b(20.0f,-20.0f,-5.0f);
+      V3f c(-20.0f,-20.0f,-5.0f);
+      V3f d(-20.0f, 20.0f,5.0f);
+          
+      Range cur(c,a); ExpandRange(cur,b); ExpandRange(cur, d);
+      texture.CheckTexture(cur);
+        
+      glBegin(GL_QUADS);
+      glColor3f(1.0f, 0.0f, 0.0f);
+      glVertex3f(texture.SetTexture(a)); 
+      glVertex3f(texture.SetTexture(b)); 
+      glVertex3f(texture.SetTexture(c)); 
+      glVertex3f(texture.SetTexture(d)); 
+      glEnd();
+
+    };
+
+  } scene; 
+
+  runScene(scene);
 };
 
-/*
-  For each point 3 consequitive samples are taken and their relation is plotted
-  on the surface. Provides efficient way to detect problems.
- */
-TEST(OGL, SurfaceInfoBars){
+//Explore detection visualization. 
+TEST(OGL, SurfaceAnalyzer){
   
   struct: public Drawable{
     Surface surf;
     FastVolume vol;
+
     void Draw(){
-
-      int x, y;
-      glfwGetMousePos(&x, &y);
-
-      DrawSurface( surf );
-
       glDisable(GL_LIGHTING);
-
-      glPushMatrix();
-      glBegin(GL_LINES);
-      //Draw normals
-      glColor3f(1,0,0);
-      for(int i = 0; i < surf.v.size(); i++){
-	V3f c;
-	AnalyzePoint(surf.v[i]+surf.n[i]*sin(0.01*x)*sin(0.01*x)*1.5, surf.n[i], vol, c);
-	surf.c[i] = c;
-      };
-      glEnd();
-      glPopMatrix();
-
-      DrawPlane(V3f(0,0,0), V3f(20,0,0), V3f(0,20,0), 5);
-      
-
+      DrawSurface( surf );
     };
   } scene; 
+  /*
+  //Perform surface modification if user asked.
+  struct public EventSlider {
+  Surface * surf;
+  bool Do(int value){
+  for(int i = 0; i < surf.v.size(); i++){
+  V3f c;
+  AnalyzePoint(surf.v[i]+surf.n[i]*sin(0.01*x)*sin(0.01*x)*1.5, surf.n[i], vol, c);
+  surf.c[i] = c;
+  };
+  };
+  };
+  */  
 
   //Load the triangle data.
   EXPECT_TRUE(read_surface_binary(scene.surf, "lh.pial"));
@@ -115,22 +136,17 @@ TEST(OGL, SurfaceInfoBars){
   AnalyzeSurface(scene.surf, scene.vol);
   
   runScene(scene);  
-
 };
 
-
+//Loading surface.
 TEST(OGL, Surface){
   
   struct: public Drawable{
     Surface surf;
     FastVolume vol;
     void Draw(){
-
       DrawSurface( surf );
-
       glDisable(GL_LIGHTING);
-
-
     };
   } scene; 
 
@@ -144,45 +160,61 @@ TEST(OGL, Surface){
 
 };
 
-
-TEST(OGL, TexturedQuad){
-  struct TexturedScene: public Drawable, public Textured {
-    void Draw(){
-      V3f off(10*sin(0.1*frame_no_), 10*cos(0.13*frame_no_), 0);
-      V3f a(20.0f,20.0f,5.0f); //random quad
-      V3f b(20.0f,-20.0f,-5.0f);
-      V3f c(-20.0f,-20.0f,-5.0f);
-      V3f d(-20.0f, 20.0f,5.0f);
-      a+=off; b+=off; c+=off; d+=off;
-    
-      Range cur(c,a); ExpandRange(cur,b); ExpandRange(cur, d);
-      CheckTexture(cur);
-        
-      glBegin(GL_QUADS);
-      glColor3f(1.0f, 0.0f, 0.0f);
-      glVertex3f(SetTexture(a)); 
-      glVertex3f(SetTexture(b)); 
-      glVertex3f(SetTexture(c)); 
-      glVertex3f(SetTexture(d)); 
-      glEnd();
-
-    };
-  } scene; 
-  runScene(scene);
-};
+/** Use the class to store texture
+    to be passed on to other objects during 
+    rendering. */
 
 TEST(OGL, TexturedSphere){
-  struct: public Drawable, public Textured{
+  struct: public Drawable{
+    Textured * texture;
+
     void Draw(){
       glDisable(GL_BLEND);
       glBlendFunc ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      DrawSphere(V3f(80*sin(0.05*frame_no_), 
-		     80*sin(0.07*frame_no_+34), 
-		     80*sin(0.03*frame_no_+65)+0.1), 
-		 30.0f, 60,  
-		 this);
+      DrawSphere(V3f(0, 0, 0), 30.0f, 60, texture);
     };
   } scene;
+
+  Textured texture;
+  scene.texture = & texture;
+
+  runScene(scene);
+};
+
+TEST(OGL, TexturedFastVolumeSphere){
+  struct: public Drawable {
+    Textured * texture;
+
+    void Draw(){
+      glEnable(GL_BLEND);
+      glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+      DrawSphere(V3f(0,0,0), 30.0f, 5, texture);
+    };
+  } scene;
+
+  FastVolume volume;
+  MgzLoader mri(volume);
+  EXPECT_TRUE(mri.Load("brainmask.mgz"));
+  EXPECT_NE((void *)0 , volume.vol);
+
+  Textured texture; //This will keep track of its scope.
+  scene.texture = &texture;
+  texture.texturing_fastvolume = & volume;  
+  
+
+  runScene(scene);
+};
+
+//Basic interface test. (Probably redundant.)
+TEST(OGL, Navigator){
+  struct: public Drawable{
+    void Draw(){
+      V3f c(Center());
+      c /= 2;
+
+      DrawSphere( c, 3.0f, 40);
+    };
+  } scene; 
   runScene(scene);
 };
 
@@ -206,12 +238,11 @@ TEST(OGL, Navigation){
       float radius = 20;
       Intersection hit_point;
 
-      //      printf("from %f %f %f - into %f %f %f\n", in.O.x, in.O.y, in.O.z, in.D.x, in.D.y, in.D.z);
       if(IntersectRaySphere(in, pnt, radius, hit_point).hit){
       }else{
 	IntersectRayPlane(in, Ray(V3f(0,0,0), V3f(0,0,-1)), hit_point);
       };
-	DrawSphere(in.Travel(hit_point.distance, hit_v), 10, 10);
+      DrawSphere(in.Travel(hit_point.distance, hit_v), 10, 10);
       
       
       DrawSphere(pnt, radius, 30);
@@ -223,9 +254,11 @@ TEST(OGL, Navigation){
 TEST(OGL, SurfaceNavigation){
   
   struct: public Drawable{
+    Textured texture;
     Surface surf;
     FastVolume vol;
     Ray in;
+
     void Draw(){
 
       int x, y;
@@ -239,7 +272,7 @@ TEST(OGL, SurfaceNavigation){
 
       Intersection hit;
       
-      if(glfwGetKey(GLFW_KEY_RCTRL) == GLFW_PRESS)in = mousePosition();
+      if(glfwGetKey(GLFW_KEY_LSHIFT) == GLFW_PRESS)in = mousePosition();
 
       glPointSize(5);
       glBegin(GL_POINTS);
@@ -260,15 +293,17 @@ TEST(OGL, SurfaceNavigation){
       };
       glEnd();
 
-      DrawSphere(in.Travel(min_depth+10), 15.0, 10);
+      DrawSphere(in.Travel(min_depth+1), 15.0, 10, & texture);
 
       glBegin(GL_LINES);
       //Draw normals
       glColor3f(1,0,0);
-      for(int i = 0; i < surf.v.size(); i++){
-	V3f c;
-	AnalyzePoint(surf.v[i]+surf.n[i]*sin(0.01*x)*sin(0.01*x)*1.5, surf.n[i], vol, c);
-	surf.c[i] = c;
+      if(glfwGetKey(GLFW_KEY_TAB) == GLFW_PRESS){
+	for(int i = 0; i < surf.v.size(); i++){
+	  V3f c;
+	  AnalyzePoint(surf.v[i]+surf.n[i]*sin(0.01*x)*sin(0.01*x)*1.5, surf.n[i], vol, c);
+	  surf.c[i] = c;
+	};
       };
       glEnd();
       glPopMatrix();
@@ -282,62 +317,15 @@ TEST(OGL, SurfaceNavigation){
   //Load volume.
   MgzLoader mri(scene.vol);
   EXPECT_TRUE(mri.Load("brainmask.mgz"));
+  scene.texture.texturing_fastvolume = & scene.vol;
 
   AnalyzeSurface(scene.surf, scene.vol);
   
   runScene(scene);  
-
-  
-};
-
-
-TEST(OGL, TexturedFastVolumeSphere){
-  struct: public Drawable, public Textured{
-    void Draw(){
-      printf("%d:\n", (int)texturing_fastvolume->vol);
-
-      glEnable(GL_BLEND);
-      glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-      DrawSphere(V3f(80*sin(0.05*frame_no_), 
-		     80*sin(0.07*frame_no_+34), 
-		     80*sin(0.03*frame_no_+65)), 
-		 30.0f, 5,  
-		 this);
-                 
-    };
-  } scene;
-
-  FastVolume volume;
-   MgzLoader mri(volume);
-   EXPECT_TRUE(mri.Load("brainmask.mgz"));
-   EXPECT_NE((void *)0 , volume.vol);
-
-  scene.texturing_fastvolume = & volume;  
-
-  runScene(scene);
-};
-
-
-TEST(OGL, QuadBlending){
-  struct : public Drawable{
-    void Draw(){
-      glEnable(GL_BLEND);
-      glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glBegin(GL_QUADS);
-      glColor4f(1.0f, 0.0f, 0.0f, 0.5f);
-      glVertex3f(100,100,100); //random quad
-      glVertex3f(100,-100,100);
-      glVertex3f(-100,-100,100);
-      glVertex3f(-100, 100,100);
-      glEnd();
-
-    };
-  } scene;
-  runScene(scene);
 };
 
 /*
-  //Now every scene got a camera.
+//Now every scene got a camera.
 */
 TEST(OGL, Camera){
 
@@ -419,30 +407,34 @@ TEST(OGL, RotationControl){
 
 #define EPSILON 0.0001
 
+TEST(Intersection, Mesh){
+  
+};
+
 TEST(Intersection, Sphere){
-   Ray ray(V3f(1,1,1), V3f(0,1,0));
-   Ray travel_test(ray);
-   V3f res;
-   Intersection pnt;
-   travel_test.Travel(4, res);
-   EXPECT_LT((V3f(1,5,1) - res).length(), EPSILON);
-   EXPECT_FALSE(IntersectRaySphere(ray, V3f(0,4,0), 1.0f, pnt).hit);
-   EXPECT_TRUE(IntersectRaySphere(ray, V3f(0,4,0), 2.0f, pnt).hit);
-   EXPECT_FLOAT_EQ(2.0f, (ray.Travel(pnt.distance, res)-V3f(0,4,0)).length()); //actually equal to the radius. 
+  Ray ray(V3f(1,1,1), V3f(0,1,0));
+  Ray travel_test(ray);
+  V3f res;
+  Intersection pnt;
+  travel_test.Travel(4, res);
+  EXPECT_LT((V3f(1,5,1) - res).length(), EPSILON);
+  EXPECT_FALSE(IntersectRaySphere(ray, V3f(0,4,0), 1.0f, pnt).hit);
+  EXPECT_TRUE(IntersectRaySphere(ray, V3f(0,4,0), 2.0f, pnt).hit);
+  EXPECT_FLOAT_EQ(2.0f, (ray.Travel(pnt.distance, res)-V3f(0,4,0)).length()); //actually equal to the radius. 
 };
 
 TEST(Intersection, Plane){
-   Ray ray(V3f(1,1,1), V3f(0,1,0));
-   Ray plane(V3f(2, 99, 8), V3f(0,1,0));
-   Ray random_plane(V3f(2, 99, 8), V3f(3.4,1,-2.1));
-   Intersection pnt;
-   V3f res;
+  Ray ray(V3f(1,1,1), V3f(0,1,0));
+  Ray plane(V3f(2, 99, 8), V3f(0,1,0));
+  Ray random_plane(V3f(2, 99, 8), V3f(3.4,1,-2.1));
+  Intersection pnt;
+  V3f res;
    
-   IntersectRayPlane(ray, plane, pnt);
-   EXPECT_EQ(pnt.hit, true);
-   EXPECT_FLOAT_EQ(99.f, ray.Travel(pnt.distance, res).y);
+  IntersectRayPlane(ray, plane, pnt);
+  EXPECT_EQ(pnt.hit, true);
+  EXPECT_FLOAT_EQ(99.f, ray.Travel(pnt.distance, res).y);
    
-   IntersectRayPlane(ray, random_plane, pnt);
-   ray.Travel(pnt.distance, res);
-   EXPECT_GT(0.0001f, (res-random_plane.O).dot(random_plane.D));
+  IntersectRayPlane(ray, random_plane, pnt);
+  ray.Travel(pnt.distance, res);
+  EXPECT_GT(0.0001f, (res-random_plane.O).dot(random_plane.D));
 };

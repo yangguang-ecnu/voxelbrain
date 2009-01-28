@@ -26,19 +26,17 @@ should be placed inside a 256 cube.*/
 class Drawable {
  public:
   virtual void Draw() = 0;
-  virtual void NextFrame(); //next frame happened (More general tool for notifications?)
-
-  int frame_no_;
 };
 
 /*
   3D texturing.
 */
 
-
 class Textured: public Validatable {
 
  public:
+
+  //Used by UpdateTextured() to fill in the data.
   FastVolume * texturing_fastvolume;
 
   bool CheckTexture( Range & r );
@@ -101,7 +99,8 @@ const V3f & SetColor(const V3f &);
 
 /*
   Rays.
-  */
+*/
+
 extern V3f travel_ray;
 struct Ray {
 	V3f O; //origin 

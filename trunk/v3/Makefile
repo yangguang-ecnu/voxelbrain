@@ -44,7 +44,7 @@ tests: $(VX2_CODE) $(VX2_TESTS)
 	$(CXX) $(VX2_CODE) $(VX2_TESTS) $(GTEST_STATIC) $(LINKFLAGS) -o tests
 
 tags:
-	etags --declarations *.cpp *.h /usr/include/GL/gl.h $(GLFW_INCLUDE)/GL/glfw.h
+	etags $(ETAGSFLAGS) *.cpp *.h $(GLFW_INCLUDE)/GL/glfw.h
 
 glfwtest: glfwtest.o
 	$(CXX) glfwtest.o $(LINKFLAGS) -o glfwtest.exe
