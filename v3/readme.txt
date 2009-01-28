@@ -1,14 +1,18 @@
 Code is hosted here:
 http://code.google.com/p/voxelbrain/
 
-to compile: make -f Makefile.<config> vx2
+Serious coding problems lead to the changes in the 
+development process. Now the process is organized as follows:
+ 1. Write some small unit of functionality in a GTEST
+ 2. Factor out anything useful into a file.
+ Repeat until done.
 
-TODO:
+So, the architecture is minimal:
 
-make it possible to disable the translucent area.
+  - Scene viewer, accepts scenes which are Drawable;
+     The viewer provides navigation and pointing facilities.
 
-
---
-
-  - Do the crossection thing in unittest.
-  - Make it possible to pointto  a place.
+Todo:
+ Provide facilities for keyboard feedback.
+ Integrate propagation into the workflow.
+  
