@@ -93,6 +93,7 @@ V3f Center();
  */
 
 const V3f & glVertex3f(const V3f &);
+const V3f & glNormal3f(const V3f &);
 const V3f & glColor3f(const V3f &);
 const V3f & glTexCoord3f(const V3f &);
 const V3f & SetColor(const V3f &);
@@ -124,6 +125,7 @@ Intersection & IntersectRaySphere(const Ray & ray, const V3f & center, float r, 
 /// drawing functions:
 void DrawSphere(const V3f & where, float radius, int steps = 6, Textured * t = NULL);
 void DrawSurface(const Surface & surf);
+void DrawSurfaceLines(const Surface & surf);
 void DrawPlane(const V3f & center, const V3f & dx, const V3f & dy, int cells);
 
 #endif // __3dtools_h__

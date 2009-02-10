@@ -7,8 +7,8 @@ GLFW_STATIC:= /usr/lib/libglfw.a
 GLFW_INCLUDE:= /usr/include
 
 #GTEST
-GTEST_STATIC:=/home/kdl/projects/gtest/gtest-1.1.0/lib/.libs/libgtest_main.a /home/kdl/projects/gtest/gtest-1.1.0/lib/.libs/libgtest.a 
-GTEST_INCLUDE:=/home/kdl/projects/gtest/gtest-1.1.0/include
+GTEST_STATIC:=/home/kdl/projects/gtest/gtest/lib/.libs/libgtest_main.a /home/kdl/projects/gtest/gtest/lib/.libs/libgtest.a 
+GTEST_INCLUDE:=/home/kdl/projects/gtest/gtest/include
 
 
 LINKFLAGS := -lGL -lGLU -lXrandr -lz
