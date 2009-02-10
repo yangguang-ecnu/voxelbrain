@@ -72,6 +72,24 @@ void DrawSurface( const Surface & surf){
   glEnd();
 };
 
+
+//Draw every triangle of the surface, using lines mode.
+void DrawSurfaceLines( const Surface & surf){
+  glBegin(GL_LINES);
+  glColor3f(0,1,0);
+  bool colors_valid = (surf.c.size() == surf.v.size()); //make sure there are colors to use.
+  for(vector<V3i>::const_iterator i = surf.tri.begin(); i != surf.tri.end(); i++){
+    for(int vertex = 0; vertex < 3; vertex++){ //Each verex of a face
+      if(colors_valid)glColor3f(surf.c[(*i)[vertex]]);
+      glNormal3f( surf.n[(*i)[vertex]] );
+      glVertex3f( surf.v[(*i)[vertex]] );
+      glNormal3f( surf.n[(*i)[(vertex+1) % 3]] );
+      glVertex3f( surf.v[(*i)[(vertex+1) % 3]] );
+    }; //Each vertex of a face
+  }; //Each face
+  glEnd();
+};
+
 void DrawPlane(const V3f & center, const V3f & dx , const V3f & dy, int cells){
   glBegin(GL_LINES);
   glColor3f(0,0,0);
@@ -281,6 +299,10 @@ const V3f & glColor3f(const V3f & v){
 
 const V3f & glVertex3f(const V3f & v){
   glVertex3f(v.x, v.y, v.z); return v;
+};
+
+const V3f & glNormal3f(const V3f & v){
+  glNormal3f(v.x, v.y, v.z); return v;
 };
 
 const V3f & glTexCoord3f(const V3f & v){

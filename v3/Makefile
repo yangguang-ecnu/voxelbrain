@@ -19,7 +19,6 @@ loader.o \
 gl_points.o \
 slices.o \
 color.o \
-gui.o \
 surface.o \
 native.o \
 misc.o \

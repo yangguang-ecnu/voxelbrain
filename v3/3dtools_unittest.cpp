@@ -264,7 +264,8 @@ TEST(OGL, SurfaceNavigation){
       int x, y;
       glfwGetMousePos(&x, &y);
 
-      DrawSurface( surf );
+      //DrawSurface( surf );
+      DrawSurfaceLines( surf);
 
       glDisable(GL_LIGHTING);
 
